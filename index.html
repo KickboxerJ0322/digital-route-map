@@ -1,0 +1,3990 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>デジタル路線図 / JR東日本</title>
+    <!-- Google FontsからPoppinsフォントを読み込む -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+        /* 全体のリセット */
+        html,
+        body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          background-color: #000; /* 背景を黒に設定 */
+          font-family: "Poppins", sans-serif;
+          color: white;
+          overflow: hidden; /* スクロールバーを非表示 */
+        }
+      
+        /* ヘッダーを固定し、透過背景に設定 */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 56px;
+            width: 100%;
+            z-index: 1002; /* マップより上に表示 */
+            background-color: rgba(0, 0, 0, 0.8); /* 半透明黒 */
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 600;
+            box-sizing: border-box;
+            line-height: 56px; /* ヘッダーの高さに合わせる */
+        }
+      
+        /* ヘッダー内の画像スタイル */
+        header img {
+          width: 60px;
+          height: 60px;
+          margin-right: 10px;
+          border-radius: 50%;
+          margin-top: 0; /* 追加 */
+          margin-bottom: 0; /* 追加 */
+        }
+        header .header-left,
+        header .header-right {
+        display: flex;
+        align-items: center; /* 縦方向の中央揃え */
+        }
+        /* ボタン全体を半透明黒に設定 */
+        button {
+          background-color: rgba(0, 0, 0, 0.8); /* 半透明黒 */
+          border: 1px solid #ccc;
+          color: #fff;
+          padding: 8px 12px;
+          margin: 4px 4px 4px 0;
+          cursor: pointer;
+          border-radius: 4px;
+          font-size: 14px;
+          box-sizing: border-box;
+          width: auto; /* 必要に応じて変更 */
+        }      
+        /* ボタンホバー時の背景色変更 */
+        button:hover {
+          background-color: rgba(255, 255, 255, 0.2);
+        }      
+        .small-heading {
+          background-color: rgba(139, 0, 0, 0.8); 
+          border: 1px solid #ccc;
+          color: #fff;
+          padding: 8px 12px;
+          margin: 4px 4px 4px 0;
+          cursor: pointer;
+          border-radius: 4px;
+          font-size: 14px;
+          box-sizing: border-box;
+          width: auto; /* 必要に応じて変更 */
+        }          
+        /* 縮小ボタンホバー時のスタイル */
+        .small-heading:hover {
+          background-color: rgba(255, 182, 193, 0.8);
+        }      
+        /* メインコンテナのスタイル */
+        #main-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: block;
+            margin-top: 56px; /* ヘッダーの高さ分下げる */
+            box-sizing: border-box;
+        }
+      
+        /* 左パネルのスタイル */
+        #left-panel {
+          position: fixed;
+          top: 56px; /* ヘッダーの高さ分だけ下へ */
+          left: 0;
+          width: 300px; /* 幅を300pxに設定 */
+          height: calc(100% - 56px);
+          background-color: rgba(0, 0, 0, 0.6); /* 半透明黒 */
+          padding: 4px;
+          box-sizing: border-box;
+          overflow-y: auto;
+          z-index: 1002; /* ヘッダーより上に表示 */
+        }
+        /* 縮小ボタンのスタイル */
+        .leftminimize-button {
+            position: fixed;
+            top: 56px;
+            left: 255px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: none;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }        
+        /* 縮小ボタンホバー時のスタイル */
+        .leftminimize-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }        
+        /* 表示ボタンのスタイル */
+        .leftshow-button {
+            position: fixed;
+            top: 56px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: none;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 8px 12px;
+            z-index: 1003; /* 他の要素より上に表示 */
+        }
+        
+        /* 表示ボタンホバー時のスタイル */
+        .leftshow-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }   
+        /* 右パネルのスタイル */
+        #right-panel {
+          position: fixed;
+          top: 56px;
+          right: 0;
+          width: 150px;
+          height: calc(100% - 56px);
+          background-color: rgba(0, 0, 0, 0.6); /* 半透明黒 */
+          padding: 10px;
+          box-sizing: border-box;
+          overflow-y: auto;
+          z-index: 1001; /* ヘッダーより上に表示 */
+        }      
+        /* 下部セクションのスタイル */
+        #bottom-section {
+          position: fixed;
+          bottom: 0;
+          left: 300px;
+          height: 150px;
+          width: calc(100% - 300px);
+          background-color: rgba(0, 0, 0, 0.6); /* 半透明黒 */
+          overflow-x: auto;
+          overflow-y: auto;
+          padding: 4px;
+          box-sizing: border-box;
+          z-index: 1001; /* ヘッダーより上に表示 */
+          transition: all 0.3s ease-in-out; /* アニメーションを追加 */
+        }
+        /* 縮小ボタンのスタイル */
+        .minimize-button {
+          position: fixed; /* 画面に固定 */
+          top: auto;       /* 固定位置解除 */
+          right: 10px;     /* 右端からの距離を調整 */
+          bottom: 120px; /* 下部セクションの高さに合わせる */
+          background-color: rgba(0, 0, 0, 0.8);
+          border: none;
+          color: white;
+          font-size: 12px;
+          cursor: pointer;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1002; /* 下部セクションより上に表示 */
+        }       
+        /* 縮小ボタンホバー時のスタイル */
+        .minimize-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 表示ボタンのスタイル */
+        .show-button {
+            position: fixed;
+            bottom: 80px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: none;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 8px 12px;
+            z-index: 1003; /* 他の要素より上に表示 */
+        }
+        
+        /* 表示ボタンホバー時のスタイル */
+        .show-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }      
+        /* 3Dマップを画面全体に固定し、背面に配置 */
+        #map-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          z-index: 1000; /* マップを最背面に */
+        }
+      
+        /* 3Dマップのスタイル */
+        #map3d {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%; /* 高さを100%に設定 */
+          border: none;
+          margin: 0;
+          padding: 0;
+        }
+      
+        /* 2Dマップのスタイル */
+        #map2d {
+          position: absolute;
+          width: 240px; 
+          height: 160px; 
+          bottom: 10px; 
+          left: 10px; 
+          z-index: 1001; 
+          border: 2px solid #101E10; 
+          background-color: #fff; /* 白背景 */
+          display: none; /* 初期は非表示 */
+        }
+      
+        /* テーブルのスタイル */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 4px;
+          font-size: 12px;
+          color: #fff;
+        }
+        th,
+        td {
+          border: 1px solid #fff;
+          padding: 6px;
+          text-align: center;
+        }
+        th {
+          background-color: rgba(0, 0, 0, 0.6);
+        }
+      
+        /* 入力フォームのスタイル */
+        #placeInput {
+          padding: 5px;
+          font-size: 12px;
+          width: 200px; /* 幅を200pxに設定 */
+          margin-right: 4px;
+          box-sizing: border-box;
+        }
+      
+        /* ステータス系テキストのスタイル */
+        .status-container {
+          display: inline-block;
+          color: white;
+          right: 0px;
+        }
+        .status-text {
+          font-size: 12px;
+        }
+      
+        /* 追加オプションの表示/非表示スタイル */
+        #moreOptions {
+          display: none; /* 初期は非表示 */
+          margin-top: 8px;
+        }
+      
+        /* autocomplete 用スタイル */
+        .pac-card {
+          position: absolute;
+          z-index: 1000;
+          display: none;
+        }
+        .pac-controls {
+          display: none;
+        }
+      
+        /* Labels on/offボタンのスタイル */
+        #labelsOffButton,
+        #labelsOnButton {
+          margin-left: 0;
+        }
+      
+        /* バス停アイコンのスタイル */
+        .station-icon {
+          background-color: transparent;
+          width: 20px;
+          height: 20px;
+          border-radius: 5px;
+          border: 2px solid #101E10;
+        }
+      
+        /* スマホ対応（横幅が狭い場合はレイアウトを縦並びに） */
+        @media (max-width: 768px) {
+            header {
+                font-size: 14px;
+                padding: 6px 8px;
+                height: 56px; /* ヘッダーの高さを維持 */
+                z-index: 1002; /* ヘッダーのz-indexを維持 */
+              }
+            
+              /* 左パネルと右パネルを縦並びにし、幅を100%に設定 */
+              #left-panel,
+              #right-panel {
+                position: fixed;   /* 固定配置に変更 */
+                top: 56px;         /* ヘッダーの高さ分下へ */
+                left: 0;
+                width: 100%;
+                height: 100px;
+                background-color: rgba(0, 0, 0, 0.6); /* 少し濃いめの半透明黒 */
+                overflow-y: auto;
+                padding: 8px;
+                box-sizing: border-box;
+                z-index: 1001;     /* ヘッダーより下に表示 */
+              }
+            
+              /* 下部セクションの幅を100%に設定 */
+              #bottom-section {
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 150px;
+                padding: 8px;
+              }
+              .minimize-button {
+                right: 10px;
+                bottom: 120px; /* 高さを調整 */
+              }
+              .leftminimize-button {
+                left: auto; /* 左の位置を無効化 */
+                right: 10px; /* 右の位置を設定 */
+              }            
+              /* メインコンテナのマージンをリセット */
+              #main-container {
+                margin-top: 0;
+              }
+            
+              /* 2Dマップの位置調整（必要に応じて変更） */
+              #map2d {
+                width: 200px; 
+                height: 140px; 
+                bottom: 60px; /* パネルの上に配置 */
+                left: 10px;
+              }
+        }
+        /* 非常に小さい画面の場合の追加対応 */
+        @media (max-width: 480px) {
+          #bottom-section {
+            padding: 6px; /* パディングをさらに小さく */
+            font-size: 12px; /* フォントサイズを縮小 */
+          }
+        }
+    </style>      
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <img
+          src="https://kickboxerj0322.github.io/Realtime-route-map/01_logo.png"
+          alt="アイコン"
+        />
+        デジタル路線図 / JR東日本
+      </div>
+      <div class="header-right"></div>
+      <!-- ログアウトボタン -->
+      <button id="logoutButton">Logout</button>
+    </header>
+
+    <!-- 2カラムレイアウトのコンテナ -->
+    <!-- <div id="main-container"> -->
+      <!-- 左パネル（ボタンや入力フォームなど） -->
+      <div id="left-panel">
+        <!-- 縮小ボタンを追加 -->
+        <button id="leftminimizeButton" class="leftminimize-button">−</button>
+        <div id="stationButtonsContainer" style="margin-top: 4px;">
+            <!-- 後段のスクリプト内で動的にボタンを生成 -->
+        </div>
+        <div>
+          <button id="alertToggleButton" class="small-heading">運行情報</button>
+          <button id="tripupdatesButton" class="small-heading">ルート最新情報</button>
+          <button id="stationupdatesButton" class="small-heading">路線・駅情報</button>
+          <button id="busResultsButton" class="small-heading">車両情報</button>
+          <button id="tripsButton" class="small-heading">到着出発情報</button>
+          <button id="moreOptionsButton" class="small-heading">設定</button>
+        </div>
+        <!-- その他オプション（折りたたみ） -->
+        <div id="moreOptions">
+          <input type="text" id="placeInput" placeholder="Enter location or landmark" />
+          <button id="setCustomLocationButton">Set</button>
+          <button id="getCurrentLocationButton">Current</button>
+          <button id="refreshButton">Bus</button>
+          <button id="showStationsButton">Bus stop</button>  
+          <button id="show2dButton">2D表示</button>
+          <button id="hide2dButton">2D非表示</button>
+          <button id="polygonButton">Polygon</button>
+          <div style="margin-top: 8px;">
+            <!-- locationPoints 表示欄 -->
+            <div>
+              <label>P1 Lat:</label>
+              <input type="text" id="locPoint1Lat" readonly style="width: 70px;" />
+              <label>Lng:</label>
+              <input type="text" id="locPoint1Lng" readonly style="width: 70px;" />
+            </div>
+            <div>
+              <label>P2 Lat:</label>
+              <input type="text" id="locPoint2Lat" readonly style="width: 70px;" />
+              <label>Lng:</label>
+              <input type="text" id="locPoint2Lng" readonly style="width: 70px;" />
+            </div>
+            <div>
+              <label>P3 Lat:</label>
+              <input type="text" id="locPoint3Lat" readonly style="width: 70px;" />
+              <label>Lng:</label>
+              <input type="text" id="locPoint3Lng" readonly style="width: 70px;" />
+            </div>
+            <div>
+              <label>P4 Lat:</label>
+              <input type="text" id="locPoint4Lat" readonly style="width: 70px;" />
+              <label>Lng:</label>
+              <input type="text" id="locPoint4Lng" readonly style="width: 70px;" />
+            </div>
+          </div>
+        
+          <!-- Polygon 設定項目 -->
+          <div style="margin-top: 8px;">
+            <label>Altitude Offset:</label>
+            <input type="number" id="polygonAltitudeOffset" value="500" style="width: 60px;" /><br/>
+            <label>Fill Color:</label>
+            <input type="color" id="polygonFillColor" value="#ff0000" style="width: 60px;" /><br/>
+            <!-- ▼ 透過度(アルファ値)スライダー ▼ -->
+            <label>Fill Alpha:</label>
+            <input
+                type="range"
+                id="polygonFillAlpha"
+                min="0"
+                max="1"
+                step="0.05"
+                value="0.3"
+                style="width: 120px;"
+            /><br/>
+            <!-- ▲ 透過度(アルファ値)スライダー ▲ -->
+            <label>Stroke Color:</label>
+            <input type="color" id="polygonStrokeColor" value="#ff0000" style="width: 60px;" /><br/>
+            <label>Stroke Width:</label>
+            <input type="number" id="polygonStrokeWidth" value="1" style="width: 40px;" />
+          </div>
+          
+          <button id="flyToButton">FlyTo</button>
+          <input
+            type="number"
+            id="flyToDuration"
+            value="5"
+            style="width: 50px"
+            title="飛行(秒)"
+          />
+          <button id="flyCameraButton">FlyAround</button>
+          <input
+            type="number"
+            id="flyAroundDuration"
+            value="5"
+            style="width: 50px"
+            title="周回(秒)"
+          />
+          <button id="updateEvery10sButton">Bus10x12</button>
+          <button id="stopUpdateButton">Stop</button>
+          <button id="clearDataMarkersButton">Bus delete</button>
+          <button id="clearStationMarkersButton">Bus stop delete</button>
+          <input
+            type="text"
+            id="vehicleIdInput"
+            placeholder="Enter Vehicle ID"
+            style="margin-top: 4px"
+          />
+          <button id="startButton">Execution</button>
+          <button id="stopstartButton">Execution stop</button>
+          <button id="clearExecutionMarkersButton">Execution delete</button>
+          <button id="labelsOffButton">Labels off</button>
+          <button id="labelsOnButton">Labels on</button>
+          <button id="disableExplorationButton">Explore off</button>
+          <button id="enableExplorationButton">Explore on</button>
+        </div>
+      </div>
+
+      <!-- 右パネル（地図を表示する） -->
+      <!-- <div id="right-panel"> -->
+        <!-- 2分割: 左に2D、右に3D -->
+        <div id="map-container">
+          <div id="map2d"></div>
+          <div id="map3d"></div>
+        </div><!-- /#map-container -->
+
+        <!-- ★追加: テーブル表示用の下部セクション -->
+        <div id="bottom-section">
+            <!-- 縮小ボタンを追加 -->
+            <button id="minimizeButton" class="minimize-button">−</button>
+            <table id="stationupdatesTable" style="display: none;">
+              <thead>
+                <tr>
+                  <th>駅名</th>
+                  <th>駅情報</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <table id="alertTable" style="display: none;">
+              <thead>
+                <tr>
+                  <th>運行情報ID</th>
+                  <th>概要</th>
+                  <th>説明</th>
+                  <th>タイムスタンプ</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>           
+            <table id="tripupdatesTable" style="display: none;">
+              <thead>
+                <tr>
+                  <th>ルート最新情報ID</th>
+                  <th>開始日時</th>
+                  <th>説明</th>
+                  <th>タイムスタンプ</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>                       
+          <!-- バス結果テーブル表示ボタン -->          
+          <table id="dataTable" style="display: none">
+            <!-- <p class="status-container"> -->
+              <!-- <span class="status-text">L: <span id="locationStatus">...</span></span><br> -->
+              <!-- &nbsp;|&nbsp; -->
+            <!-- <span class="status-text">D: <span id="timestamp">...</span></span> -->
+            <!-- </p>  -->
+            <thead>
+              <tr>
+                <th>アルファベットID</th>
+                <th>車両ID</th>
+                <th>緯度</th>
+                <th>経度</th>
+                <th>日時</th>
+                <th>目的地</th>
+                <th>路線名</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>          
+          <!-- <div id="vehicleDetails"></div>  -->
+          <table id="tripsTable" style="display: none">
+            <thead>
+              <tr>
+                <th>車両ID</th>
+                <th>駅id</th>
+                <th>駅名</th>
+                <th>到着時間</th>
+                <th>出発時間</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div><!-- /#bottom-section -->
+        <!-- 表示ボタンを追加（初期は非表示） -->
+        <button id="leftshowButton" class="leftshow-button" style="display: none;">レフト</button>
+        <button id="showButton" class="show-button" style="display: none;">ボトム</button>
+        <!-- オートコンプリート用のカード (非表示) -->
+        <div class="pac-card" id="pac-card">
+          <div id="pac-container">
+            <input
+              class="pac-input"
+              type="text"
+              id="pac-input"
+              name="pac-input"
+              placeholder="location..."
+            />
+          </div>
+        </div>
+      </div><!-- /#right-panel -->
+    </div>
+    
+    <!-- Firebase SDKの追加 -->
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- 縮小・表示ボタンのスクリプト -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const leftpanel = document.getElementById('left-panel');
+            const leftminimizeButton = document.getElementById('leftminimizeButton');
+            const leftshowButton = document.getElementById('leftshowButton');
+    
+            // 縮小ボタンをクリックしたときの処理
+            leftminimizeButton.addEventListener('click', function() {
+              leftpanel.style.display = 'none';
+              leftshowButton.style.display = 'block';
+            });
+    
+            // 表示ボタンをクリックしたときの処理
+            leftshowButton.addEventListener('click', function() {
+              leftpanel.style.display = 'block';
+              leftshowButton.style.display = 'none';
+            });
+        });  
+        document.addEventListener('DOMContentLoaded', function() {
+          const bottomSection = document.getElementById('bottom-section');
+          const minimizeButton = document.getElementById('minimizeButton');
+          const showButton = document.getElementById('showButton');
+  
+          // 縮小ボタンをクリックしたときの処理
+          minimizeButton.addEventListener('click', function() {
+            bottomSection.style.display = 'none';
+            showButton.style.display = 'block';
+          });
+  
+          // 表示ボタンをクリックしたときの処理
+          showButton.addEventListener('click', function() {
+            bottomSection.style.display = 'block';
+            showButton.style.display = 'none';
+          });
+        });
+    </script>
+    <!-- Firebaseの初期化 -->
+    <script>
+      // Firebaseの設定と初期化
+      const firebaseConfig = {
+        apiKey: "AIzaSyCJ9Edsw3BenJ1uVtJTi4LC7lETQ8DgyMo",
+        authDomain: "bus-radar-3d.firebaseapp.com",
+        projectId: "bus-radar-3d",
+        storageBucket: "bus-radar-3d.appspot.com",
+        messagingSenderId: "459123169045",
+        appId: "1:459123169045:web:e68bbc7492d08e51d2fb1c",
+        measurementId: "G-7970R9LBTR",
+      };
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+    </script>
+
+    <script type="text/javascript">
+      // テスト用にすぐ main() を呼び出す
+      main();
+
+      let map3DElement = null;
+      let currentLocationMarker = null; // 現在位置のマーカーを保持する変数
+      let currentLocationMarker2D = null; // 2Dマップ用 現在位置マーカー
+      let Marker3DElement; 
+      let PinElement;
+      let map2d = null; // 2D マップ
+
+      // 10) 吾妻線の各駅座標（「bus stop」扱い）
+      const agatsumaLineCoords = [
+          { name: "渋川", lat: 36.49123, lng: 139.00879 },
+          { name: "金島", lat: 36.52958, lng: 138.97642 },
+          { name: "祖母島", lat: 36.54074, lng: 138.95706 },
+          { name: "小野上", lat: 36.55249, lng: 138.92224 },
+          { name: "小野上温泉", lat: 36.5569, lng: 138.90431 },
+          { name: "市城", lat: 36.57064, lng: 138.88228 },
+          { name: "中之条", lat: 36.58541, lng: 138.85148 },
+          { name: "群馬原町", lat: 36.5717, lng: 138.82416 },
+          { name: "郷原", lat: 36.54873, lng: 138.8011 },
+          { name: "矢倉", lat: 36.55276, lng: 138.78426 },
+          { name: "岩島", lat: 36.56324, lng: 138.75994 },
+          { name: "川原湯温泉", lat: 36.54509, lng: 138.69723 },
+          { name: "長野原草津口", lat: 36.5465, lng: 138.64964 },
+          { name: "群馬大津", lat: 36.55381, lng: 138.62809 },
+          { name: "羽根尾", lat: 36.55016, lng: 138.6055 },
+          { name: "袋倉", lat: 36.54402, lng: 138.57918 },
+          { name: "万座・鹿沢口", lat: 36.53202, lng: 138.5514 },
+          { name: "大前", lat: 36.51358, lng: 138.52902 },
+      ];
+
+      // 11) 中央線快速の各駅座標（「bus stop」扱い）
+      const chuoRapidLineCoords = [
+          { name: "東京", lat: 35.68116, lng: 139.76713 },
+          { name: "神田", lat: 35.69177, lng: 139.77088 },
+          { name: "御茶ノ水", lat: 35.6996, lng: 139.76503 },
+          { name: "四ツ谷", lat: 35.68565, lng: 139.73054 },
+          { name: "新宿", lat: 35.69019, lng: 139.70062 },
+          { name: "中野", lat: 35.7058, lng: 139.66572 },
+          { name: "高円寺", lat: 35.70532, lng: 139.6497 },
+          { name: "阿佐ケ谷", lat: 35.70488, lng: 139.63586 },
+          { name: "荻窪", lat: 35.70443, lng: 139.62024 },
+          { name: "西荻窪", lat: 35.70378, lng: 139.59945 },
+          { name: "吉祥寺", lat: 35.70314, lng: 139.57981 },
+          { name: "三鷹", lat: 35.7027, lng: 139.56064 },
+          { name: "武蔵境", lat: 35.70209, lng: 139.54356 },
+          { name: "東小金井", lat: 35.70156, lng: 139.52376 },
+          { name: "武蔵小金井", lat: 35.70104, lng: 139.50593 },
+          { name: "国分寺", lat: 35.70014, lng: 139.48086 },
+          { name: "西国分寺", lat: 35.69973, lng: 139.46592 },
+          { name: "国立", lat: 35.6992, lng: 139.44642 },
+          { name: "立川", lat: 35.6979, lng: 139.41377 },
+          { name: "日野", lat: 35.67854, lng: 139.39343 },
+          { name: "豊田", lat: 35.65945, lng: 139.38146 },
+          { name: "八王子", lat: 35.6555, lng: 139.33882 },
+          { name: "西八王子", lat: 35.65628, lng: 139.312 },
+          { name: "高尾", lat: 35.64238, lng: 139.28264 },
+      ];
+
+      // 12) 中央・総武各駅停車	の各駅座標（「bus stop」扱い）
+      const chuoSobuLocalLineCoords = [
+          { name: "千葉", lat: 35.6136, lng: 140.11355 },
+          { name: "西千葉", lat: 35.62263, lng: 140.10332 },
+          { name: "稲毛", lat: 35.63731, lng: 140.09256 },
+          { name: "新検見川", lat: 35.6518, lng: 140.07334 },
+          { name: "幕張", lat: 35.65954, lng: 140.05782 },
+          { name: "幕張本郷", lat: 35.6729, lng: 140.04208 },
+          { name: "津田沼", lat: 35.69137, lng: 140.02022 },
+          { name: "東船橋", lat: 35.69983, lng: 140.00407 },
+          { name: "船橋", lat: 35.70174, lng: 139.98468 },
+          { name: "西船橋", lat: 35.70771, lng: 139.95858 },
+          { name: "下総中山", lat: 35.71428, lng: 139.94307 },
+          { name: "本八幡", lat: 35.72085, lng: 139.9274 },
+          { name: "市川", lat: 35.72887, lng: 139.90817 },
+          { name: "小岩", lat: 35.73333, lng: 139.88185 },
+          { name: "新小岩", lat: 35.71678, lng: 139.85765 },
+          { name: "平井", lat: 35.70645, lng: 139.84238 },
+          { name: "亀戸", lat: 35.69734, lng: 139.82661 },
+          { name: "錦糸町", lat: 35.69672, lng: 139.81432 },
+          { name: "両国", lat: 35.69576, lng: 139.79335 },
+          { name: "浅草橋", lat: 35.69739, lng: 139.78449 },
+          { name: "秋葉原", lat: 35.69832, lng: 139.77322 },
+          { name: "御茶ノ水", lat: 35.6996, lng: 139.76503 },
+          { name: "水道橋", lat: 35.702, lng: 139.75374 },
+          { name: "飯田橋", lat: 35.70016, lng: 139.74362 },
+          { name: "市ケ谷", lat: 35.69116, lng: 139.73532 },
+          { name: "四ツ谷", lat: 35.68565, lng: 139.73054 },
+          { name: "信濃町", lat: 35.67996, lng: 139.7211 },
+          { name: "千駄ケ谷", lat: 35.6812, lng: 139.71153 },
+          { name: "代々木", lat: 35.6838, lng: 139.70221 },
+          { name: "新宿", lat: 35.69019, lng: 139.70062 },
+          { name: "大久保", lat: 35.70064, lng: 139.69744 },
+          { name: "東中野", lat: 35.70625, lng: 139.68508 },
+          { name: "中野", lat: 35.7058, lng: 139.66572 },
+          { name: "高円寺", lat: 35.70532, lng: 139.6497 },
+          { name: "阿佐ケ谷", lat: 35.70488, lng: 139.63586 },
+          { name: "荻窪", lat: 35.70443, lng: 139.62024 },
+          { name: "西荻窪", lat: 35.70378, lng: 139.59945 },
+          { name: "吉祥寺", lat: 35.70314, lng: 139.57981 },
+          { name: "三鷹", lat: 35.7027, lng: 139.56064 },
+      ];
+
+      // 13) 八高線の各駅座標（「bus stop」扱い）
+      const hachikoLineCoords = [
+          { name: "八王子", lat: 35.6555, lng: 139.33882 },
+          { name: "北八王子", lat: 35.66928, lng: 139.3634 },
+          { name: "小宮", lat: 35.68591, lng: 139.36843 },
+          { name: "拝島", lat: 35.72134, lng: 139.34373 },
+          { name: "東福生", lat: 35.74583, lng: 139.3359 },
+          { name: "箱根ケ崎", lat: 35.7717, lng: 139.34674 },
+          { name: "金子", lat: 35.81082, lng: 139.32861 },
+          { name: "東飯能", lat: 35.85302, lng: 139.32613 },
+          { name: "高麗川", lat: 35.89637, lng: 139.33813 },
+          { name: "毛呂", lat: 35.94074, lng: 139.30934 },
+          { name: "越生", lat: 35.96286, lng: 139.29925 },
+          { name: "明覚", lat: 36.00356, lng: 139.28922 },
+          { name: "小川町", lat: 36.059, lng: 139.26069 },
+          { name: "竹沢", lat: 36.0755, lng: 139.22995 },
+          { name: "折原", lat: 36.09618, lng: 139.19532 },
+          { name: "寄居", lat: 36.11786, lng: 139.19352 },
+          { name: "用土", lat: 36.15385, lng: 139.20064 },
+          { name: "松久", lat: 36.17306, lng: 139.1821 },
+          { name: "児玉", lat: 36.19284, lng: 139.13572 },
+          { name: "丹荘", lat: 36.21646, lng: 139.10258 },
+          { name: "群馬藤岡", lat: 36.25032, lng: 139.08346 },
+          { name: "北藤岡", lat: 36.28212, lng: 139.08145 },
+          { name: "倉賀野", lat: 36.3003, lng: 139.04944 },
+          { name: "高崎", lat: 36.32227, lng: 139.01234 },
+      ];
+
+      // 14) 伊東線の各駅座標（「bus stop」扱い）
+      const itoLineCoords = [
+          { name: "熱海", lat: 35.10356, lng: 139.07783 },
+          { name: "来宮", lat: 35.09872, lng: 139.06557 },
+          { name: "伊豆多賀", lat: 35.05944, lng: 139.0669 },
+          { name: "網代", lat: 35.04346, lng: 139.081 },
+          { name: "宇佐美", lat: 35.00564, lng: 139.07978 },
+          { name: "伊東", lat: 34.97484, lng: 139.0921 },
+      ];
+
+      // 15) 五日市線の各駅座標（「bus stop」扱い）
+      const itsukaichiLineCoords = [
+          { name: "拝島", lat: 35.7212, lng: 139.34347 },
+          { name: "熊川", lat: 35.72829, lng: 139.33573 },
+          { name: "東秋留", lat: 35.72594, lng: 139.31168 },
+          { name: "秋川", lat: 35.72805, lng: 139.28675 },
+          { name: "武蔵引田", lat: 35.72969, lng: 139.27008 },
+          { name: "武蔵増戸", lat: 35.73096, lng: 139.2563 },
+          { name: "武蔵五日市", lat: 35.73214, lng: 139.22812 },
+      ];
+
+      // 16) 常磐線の各駅座標（「bus stop」扱い）
+      const jobanLineCoords = [
+      // 取手〜仙台
+          { name: "取手", lat: 35.89534, lng: 140.06285 },
+          { name: "藤代", lat: 35.92056, lng: 140.11815 },
+          { name: "龍ケ崎市", lat: 35.92994, lng: 140.13792 },
+          { name: "牛久", lat: 35.97518, lng: 140.14103 },
+          { name: "ひたち野うしく", lat: 36.0075, lng: 140.1583 },
+          { name: "荒川沖", lat: 36.0306, lng: 140.16598 },
+          { name: "土浦", lat: 36.0786, lng: 140.20624 },
+          { name: "神立", lat: 36.12043, lng: 140.24861 },
+          { name: "高浜", lat: 36.1635, lng: 140.29448 },
+          { name: "石岡", lat: 36.1915, lng: 140.27976 },
+          { name: "羽鳥", lat: 36.24754, lng: 140.28678 },
+          { name: "岩間", lat: 36.29542, lng: 140.27652 },
+          { name: "友部", lat: 36.35046, lng: 140.30602 },
+          { name: "内原", lat: 36.37004, lng: 140.35263 },
+          { name: "赤塚", lat: 36.38176, lng: 140.41516 },
+          { name: "偕楽園", lat: 36.37303, lng: 140.45634 },
+          { name: "水戸", lat: 36.37086, lng: 140.47721 },
+          { name: "勝田", lat: 36.39408, lng: 140.52422 },
+          { name: "佐和", lat: 36.43047, lng: 140.54051 },
+          { name: "東海", lat: 36.4655, lng: 140.56604 },
+          { name: "大甕", lat: 36.51292, lng: 140.61944 },
+          { name: "常陸多賀", lat: 36.55212, lng: 140.63272 },
+          { name: "日立", lat: 36.59032, lng: 140.6618 },
+          { name: "小木津", lat: 36.63664, lng: 140.6753 },
+          { name: "十王", lat: 36.67138, lng: 140.68594 },
+          { name: "高萩", lat: 36.71434, lng: 140.71696 },
+          { name: "南中郷", lat: 36.75332, lng: 140.72906 },
+          { name: "磯原", lat: 36.7907, lng: 140.74634 },
+          { name: "大津港", lat: 36.84606, lng: 140.778 },
+          { name: "勿来", lat: 36.88363, lng: 140.78663 },
+          { name: "植田", lat: 36.92049, lng: 140.79648 },
+          { name: "泉", lat: 36.95558, lng: 140.85408 },
+          { name: "湯本", lat: 37.00694, lng: 140.84984 },
+          { name: "内郷", lat: 37.03599, lng: 140.85494 },
+          { name: "いわき", lat: 37.05822, lng: 140.89236 },
+          { name: "草野", lat: 37.07385, lng: 140.94725 },
+          { name: "四ツ倉", lat: 37.10232, lng: 140.98086 },
+          { name: "久ノ浜", lat: 37.14247, lng: 140.99578 },
+          { name: "末続", lat: 37.17214, lng: 140.99565 },
+          { name: "広野", lat: 37.21155, lng: 140.99881 },
+          { name: "Ｊヴィレッジ", lat: 37.24176, lng: 141.00757 },
+          { name: "木戸", lat: 37.25799, lng: 141.00253 },
+          { name: "竜田", lat: 37.28245, lng: 141.00274 },
+          { name: "富岡", lat: 37.33405, lng: 141.02274 },
+          { name: "夜ノ森", lat: 37.36578, lng: 140.99202 },
+          { name: "大野", lat: 37.40932, lng: 140.9842 },
+          { name: "双葉", lat: 37.45374, lng: 141.00586 },
+          { name: "浪江", lat: 37.49222, lng: 140.98978 },
+          { name: "桃内", lat: 37.52866, lng: 140.98437 },
+          { name: "小高", lat: 37.56298, lng: 140.99636 },
+          { name: "磐城太田", lat: 37.60507, lng: 140.99151 },
+          { name: "原ノ町", lat: 37.63802, lng: 140.97105 },
+          { name: "鹿島", lat: 37.70284, lng: 140.97008 },
+          { name: "日立木", lat: 37.75613, lng: 140.93466 },
+          { name: "相馬", lat: 37.8025, lng: 140.92571 },
+          { name: "駒ケ嶺", lat: 37.84214, lng: 140.9251 },
+          { name: "新地", lat: 37.87922, lng: 140.92564 },
+          { name: "坂元", lat: 37.92408, lng: 140.90105 },
+          { name: "山下", lat: 37.96632, lng: 140.88898 },
+          { name: "浜吉田", lat: 38.00222, lng: 140.89008 },
+          { name: "亘理", lat: 38.03988, lng: 140.86129 },
+          { name: "逢隈", lat: 38.06762, lng: 140.85475 },
+          { name: "岩沼", lat: 38.11186, lng: 140.86366 },
+          { name: "館腰", lat: 38.14308, lng: 140.88016 },
+          { name: "名取", lat: 38.1731, lng: 140.88275 },
+          { name: "南仙台", lat: 38.19722, lng: 140.8833 },
+          { name: "太子堂", lat: 38.21774, lng: 140.88373 },
+          { name: "長町", lat: 38.22696, lng: 140.88616 },
+          { name: "仙台", lat: 38.25974, lng: 140.8825 },
+      ];
+
+      // 17) 常磐線各駅停車	の各駅座標（「bus stop」扱い）
+      const jobanLocalLineCoords = [
+          { name: "綾瀬", lat: 35.76216, lng: 139.82494 },
+          { name: "亀有", lat: 35.76653, lng: 139.84756 },
+          { name: "金町", lat: 35.76951, lng: 139.87039 },
+          { name: "松戸", lat: 35.78462, lng: 139.90076 },
+          { name: "北松戸", lat: 35.80036, lng: 139.91162 },
+          { name: "馬橋", lat: 35.81168, lng: 139.91732 },
+          { name: "新松戸", lat: 35.82541, lng: 139.9212 },
+          { name: "北小金", lat: 35.83317, lng: 139.93075 },
+          { name: "南柏", lat: 35.8447, lng: 139.95428 },
+          { name: "柏", lat: 35.8621, lng: 139.97096 },
+          { name: "北柏", lat: 35.87566, lng: 139.98804 },
+          { name: "我孫子", lat: 35.8728, lng: 140.01042 },
+          { name: "天王台", lat: 35.87247, lng: 140.04232 },
+          { name: "取手", lat: 35.89534, lng: 140.06285 },
+      ];
+
+      // 18) 常磐線快速	の各駅座標（「bus stop」扱い）
+      const jobanRapidLineCoords = [
+          { name: "品川", lat: 35.62866, lng: 139.73919 },
+          { name: "新橋", lat: 35.6663, lng: 139.75846 },
+          { name: "東京", lat: 35.68122, lng: 139.76653 },
+          { name: "上野", lat: 35.71376, lng: 139.77706 },
+          { name: "日暮里", lat: 35.72787, lng: 139.77132 },
+          { name: "三河島", lat: 35.73338, lng: 139.77708 },
+          { name: "南千住", lat: 35.73464, lng: 139.79978 },
+          { name: "北千住", lat: 35.74884, lng: 139.80464 },
+          { name: "松戸", lat: 35.78462, lng: 139.90076 },
+          { name: "柏", lat: 35.8621, lng: 139.97096 },
+          { name: "我孫子", lat: 35.8728, lng: 140.01042 },
+          { name: "天王台", lat: 35.87247, lng: 140.04232 },
+          { name: "取手", lat: 35.89534, lng: 140.06285 },
+      ];
+
+      // 19) 上越線の各駅座標（「bus stop」扱い）
+      const joetsuLineCoords = [
+          { name: "高崎", lat: 36.32227, lng: 139.01234 },
+          { name: "高崎問屋町", lat: 36.34614, lng: 139.01723 },
+          { name: "井野", lat: 36.35744, lng: 139.02327 },
+          { name: "新前橋", lat: 36.379, lng: 139.047 },
+          { name: "群馬総社", lat: 36.41551, lng: 139.03228 },
+          { name: "八木原", lat: 36.46379, lng: 139.01925 },
+          { name: "渋川", lat: 36.49123, lng: 139.00879 },
+          { name: "敷島", lat: 36.53756, lng: 139.03394 },
+          { name: "津久田", lat: 36.56103, lng: 139.04286 },
+          { name: "岩本", lat: 36.60216, lng: 139.04753 },
+          { name: "沼田", lat: 36.6423, lng: 139.03564 },
+          { name: "後閑", lat: 36.67955, lng: 139.00012 },
+          { name: "上牧", lat: 36.73563, lng: 138.98456 },
+          { name: "水上", lat: 36.77908, lng: 138.9693 },
+          { name: "湯檜曽", lat: 36.80289, lng: 138.98585 },
+          { name: "土合", lat: 36.83036, lng: 138.96506 },
+          { name: "土樽", lat: 36.87528, lng: 138.86159 },
+          { name: "越後中里", lat: 36.91032, lng: 138.84852 },
+          { name: "岩原スキー場前", lat: 36.92428, lng: 138.83936 },
+          { name: "越後湯沢", lat: 36.93582, lng: 138.80962 },
+          { name: "石打", lat: 36.98892, lng: 138.80418 },
+          { name: "大沢", lat: 37.02123, lng: 138.82133 },
+          { name: "上越国際スキー場前", lat: 37.02875, lng: 138.82801 },
+          { name: "塩沢", lat: 37.04148, lng: 138.84843 },
+          { name: "六日町", lat: 37.06668, lng: 138.87566 },
+          { name: "五日町", lat: 37.11994, lng: 138.90844 },
+          { name: "浦佐", lat: 37.16737, lng: 138.92304 },
+          { name: "八色", lat: 37.19176, lng: 138.93511 },
+          { name: "小出", lat: 37.23357, lng: 138.95361 },
+          { name: "越後堀之内", lat: 37.23896, lng: 138.92828 },
+          { name: "北堀之内", lat: 37.25574, lng: 138.89632 },
+          { name: "越後川口", lat: 37.27286, lng: 138.86156 },
+          { name: "小千谷", lat: 37.30968, lng: 138.81348 },
+          { name: "越後滝谷", lat: 37.36864, lng: 138.83498 },
+          { name: "宮内", lat: 37.42214, lng: 138.84012 },
+          { name: "長岡", lat: 37.44776, lng: 138.85398 },
+      ];
+    
+      // 20) 鹿島線の各駅座標（「bus stop」扱い）
+      const kashimaLineCoords = [
+          { name: "佐原", lat: 35.89493, lng: 140.49377 },
+          { name: "香取", lat: 35.89788, lng: 140.53241 },
+          { name: "十二橋", lat: 35.91702, lng: 140.54583 },
+          { name: "潮来", lat: 35.93746, lng: 140.54969 },
+          { name: "延方", lat: 35.9581, lng: 140.5888 },
+          { name: "鹿島神宮", lat: 35.9707, lng: 140.62593 },
+          { name: "鹿島サッカースタジアム", lat: 35.99306, lng: 140.63591 },
+      ];
+
+      // 21) 川越線(川越-高麗川間)	の各駅座標（「bus stop」扱い）
+      const kawagoeLineBetweenCoords = [
+          { name: "川越", lat: 35.90668, lng: 139.4832 },
+          { name: "西川越", lat: 35.9191, lng: 139.45994 },
+          { name: "的場", lat: 35.91754, lng: 139.43541 },
+          { name: "笠幡", lat: 35.90758, lng: 139.40626 },
+          { name: "武蔵高萩", lat: 35.90168, lng: 139.37112 },
+          { name: "高麗川", lat: 35.89637, lng: 139.33813 },
+      ];
+
+      // 22) 京浜東北線・根岸線	の各駅座標（「bus stop」扱い）
+      const keihinTohokuNegishiLineCoords = [
+          { name: "大宮", lat: 35.90626, lng: 139.62396 },
+          { name: "さいたま新都心", lat: 35.8936, lng: 139.6339 },
+          { name: "与野", lat: 35.88438, lng: 139.63899 },
+          { name: "北浦和", lat: 35.8722, lng: 139.64575 },
+          { name: "浦和", lat: 35.85856, lng: 139.65714 },
+          { name: "南浦和", lat: 35.84834, lng: 139.66862 },
+          { name: "蕨", lat: 35.82793, lng: 139.69042 },
+          { name: "西川口", lat: 35.81552, lng: 139.70436 },
+          { name: "川口", lat: 35.8018, lng: 139.71746 },
+          { name: "赤羽", lat: 35.77765, lng: 139.72099 },
+          { name: "東十条", lat: 35.76386, lng: 139.72676 },
+          { name: "王子", lat: 35.75232, lng: 139.73821 },
+          { name: "上中里", lat: 35.74709, lng: 139.74593 },
+          { name: "田端", lat: 35.73748, lng: 139.76158 },
+          { name: "西日暮里", lat: 35.73208, lng: 139.76678 },
+          { name: "日暮里", lat: 35.7276, lng: 139.77117 },
+          { name: "鶯谷", lat: 35.72146, lng: 139.77803 },
+          { name: "上野", lat: 35.71376, lng: 139.77706 },
+          { name: "御徒町", lat: 35.7072, lng: 139.77472 },
+          { name: "秋葉原", lat: 35.69854, lng: 139.77304 },
+          { name: "神田", lat: 35.69177, lng: 139.77088 },
+          { name: "東京", lat: 35.68122, lng: 139.76653 },
+          { name: "有楽町", lat: 35.67504, lng: 139.76326 },
+          { name: "新橋", lat: 35.6663, lng: 139.75846 },
+          { name: "浜松町", lat: 35.65541, lng: 139.75712 },
+          { name: "田町", lat: 35.64574, lng: 139.7476 },
+          { name: "高輪ゲートウェイ", lat: 35.63538, lng: 139.74064 },
+          { name: "品川", lat: 35.62866, lng: 139.73919 },
+          { name: "大井町", lat: 35.60681, lng: 139.73499 },
+          { name: "大森", lat: 35.58892, lng: 139.72815 },
+          { name: "蒲田", lat: 35.56248, lng: 139.71603 },
+          { name: "川崎", lat: 35.53136, lng: 139.69681 },
+          { name: "鶴見", lat: 35.50849, lng: 139.67624 },
+          { name: "新子安", lat: 35.48682, lng: 139.65402 },
+          { name: "東神奈川", lat: 35.47788, lng: 139.63316 },
+          { name: "横浜", lat: 35.46574, lng: 139.62252 },
+          { name: "桜木町", lat: 35.4511, lng: 139.63088 },
+          { name: "関内", lat: 35.44419, lng: 139.63606 },
+          { name: "石川町", lat: 35.43874, lng: 139.643 },
+          { name: "山手", lat: 35.4268, lng: 139.64647 },
+          { name: "根岸", lat: 35.41586, lng: 139.6361 },
+          { name: "磯子", lat: 35.40058, lng: 139.61847 },
+          { name: "新杉田", lat: 35.3868, lng: 139.61944 },
+          { name: "洋光台", lat: 35.37878, lng: 139.59684 },
+          { name: "港南台", lat: 35.37516, lng: 139.57624 },
+          { name: "本郷台", lat: 35.36786, lng: 139.55012 },
+          { name: "大船", lat: 35.3541, lng: 139.53151 },
+      ];
+
+      // 23) 京葉線の各駅座標（「bus stop」扱い）
+      const keiyoLineCoords = [
+          { name: "東京", lat: 35.67768, lng: 139.76524 },
+          { name: "八丁堀", lat: 35.67462, lng: 139.77799 },
+          { name: "越中島", lat: 35.668, lng: 139.7925 },
+          { name: "潮見", lat: 35.65886, lng: 139.81717 },
+          { name: "新木場", lat: 35.646, lng: 139.82684 },
+          { name: "葛西臨海公園", lat: 35.64417, lng: 139.86148 },
+          { name: "舞浜", lat: 35.63616, lng: 139.88372 },
+          { name: "新浦安", lat: 35.64952, lng: 139.91253 },
+          { name: "市川塩浜", lat: 35.66648, lng: 139.92365 },
+          // ※ 「西船橋」は本来 武蔵野線 などとの接続駅ですが、資料内 stop_code 無し
+          { name: "二俣新町", lat: 35.69132, lng: 139.95956 },
+          { name: "南船橋", lat: 35.68166, lng: 139.9957 },
+          { name: "新習志野", lat: 35.6674, lng: 140.01298 },
+          { name: "幕張豊砂", lat: 35.65816, lng: 140.02707 },
+          { name: "海浜幕張", lat: 35.6484, lng: 140.042 },
+          { name: "検見川浜", lat: 35.63717, lng: 140.05908 },
+          { name: "稲毛海岸", lat: 35.62952, lng: 140.07385 },
+          { name: "千葉みなと", lat: 35.60671, lng: 140.1028 },
+          { name: "蘇我", lat: 35.58216, lng: 140.13074 },
+      ];
+
+      // 24) 久留里線の各駅座標（「bus stop」扱い）
+      const kururiLineCoords = [
+          { name: "木更津", lat: 35.38162, lng: 139.92613 },
+          { name: "祇園", lat: 35.39162, lng: 139.94838 },
+          { name: "上総清川", lat: 35.39084, lng: 139.96564 },
+          { name: "東清川", lat: 35.39, lng: 139.9859 },
+          { name: "横田", lat: 35.3862, lng: 140.02013 },
+          { name: "東横田", lat: 35.38616, lng: 140.03594 },
+          { name: "馬来田", lat: 35.36682, lng: 140.05852 },
+          { name: "下郡", lat: 35.35499, lng: 140.05541 },
+          { name: "小櫃", lat: 35.32824, lng: 140.05978 },
+          { name: "俵田", lat: 35.31462, lng: 140.06142 },
+          { name: "久留里", lat: 35.2958, lng: 140.0756 },
+          { name: "平山", lat: 35.2743, lng: 140.06466 },
+          { name: "上総松丘", lat: 35.2582, lng: 140.06403 },
+          { name: "上総亀山", lat: 35.23318, lng: 140.0895 },
+      ];
+
+      // 25) 武蔵野線の各駅座標（「bus stop」扱い）
+      const musashinoLineCoords = [
+          { name: "府中本町", lat: 35.66584, lng: 139.4771 },
+          { name: "北府中", lat: 35.68086, lng: 139.4718 },
+          { name: "西国分寺", lat: 35.69991, lng: 139.46598 },
+          { name: "新小平", lat: 35.73092, lng: 139.4705 },
+          { name: "新秋津", lat: 35.77831, lng: 139.49376 },
+          { name: "東所沢", lat: 35.79489, lng: 139.51454 },
+          { name: "新座", lat: 35.80378, lng: 139.55629 },
+          { name: "北朝霞", lat: 35.81547, lng: 139.58723 },
+          { name: "西浦和", lat: 35.84418, lng: 139.62776 },
+          { name: "武蔵浦和", lat: 35.84604, lng: 139.64794 },
+          { name: "南浦和", lat: 35.84758, lng: 139.66894 },
+          { name: "東浦和", lat: 35.86404, lng: 139.70447 },
+          { name: "東川口", lat: 35.87516, lng: 139.74403 },
+          { name: "南越谷", lat: 35.87604, lng: 139.79115 },
+          { name: "越谷レイクタウン", lat: 35.8761, lng: 139.82226 },
+          { name: "吉川", lat: 35.87662, lng: 139.84324 },
+          { name: "吉川美南", lat: 35.86809, lng: 139.85812 },
+          { name: "新三郷", lat: 35.85839, lng: 139.86954 },
+          { name: "三郷", lat: 35.84484, lng: 139.88684 },
+          { name: "南流山", lat: 35.83784, lng: 139.90423 },
+          { name: "新松戸", lat: 35.82556, lng: 139.92098 },
+          { name: "新八柱", lat: 35.79129, lng: 139.93856 },
+          { name: "東松戸", lat: 35.77049, lng: 139.94386 },
+          { name: "市川大野", lat: 35.7554, lng: 139.95128 },
+          { name: "船橋法典", lat: 35.73046, lng: 139.96671 },
+          { name: "西船橋", lat: 35.70722, lng: 139.95952 },
+      ];
+
+      // 26) 南武線の各駅座標（「bus stop」扱い）
+      const nambuLineCoords = [
+          { name: "川崎", lat: 35.53136, lng: 139.69681 },
+          { name: "浜川崎", lat: 35.51038, lng: 139.71378 },
+          { name: "小田栄", lat: 35.51442, lng: 139.70508 },
+          { name: "川崎新町", lat: 35.51832, lng: 139.69926 },
+          { name: "八丁畷", lat: 35.52307, lng: 139.69138 },
+          { name: "尻手", lat: 35.53098, lng: 139.6843 },
+          { name: "矢向", lat: 35.53936, lng: 139.68042 },
+          { name: "鹿島田", lat: 35.55146, lng: 139.67498 },
+          { name: "平間", lat: 35.56056, lng: 139.6711 },
+          { name: "向河原", lat: 35.57218, lng: 139.6673 },
+          { name: "武蔵小杉", lat: 35.57656, lng: 139.6597 },
+          { name: "武蔵中原", lat: 35.58056, lng: 139.64214 },
+          { name: "武蔵新城", lat: 35.58742, lng: 139.62909 },
+          { name: "武蔵溝ノ口", lat: 35.59882, lng: 139.61138 },
+          { name: "津田山", lat: 35.60365, lng: 139.60072 },
+          { name: "久地", lat: 35.6101, lng: 139.59308 },
+          { name: "宿河原", lat: 35.61542, lng: 139.57954 },
+          { name: "登戸", lat: 35.62068, lng: 139.57026 },
+          { name: "中野島", lat: 35.63002, lng: 139.55108 },
+          { name: "稲田堤", lat: 35.63341, lng: 139.53594 },
+          { name: "矢野口", lat: 35.64174, lng: 139.52044 },
+          { name: "稲城長沼", lat: 35.64428, lng: 139.50261 },
+          { name: "南多摩", lat: 35.64922, lng: 139.48954 },
+          { name: "府中本町", lat: 35.66586, lng: 139.47723 },
+          { name: "分倍河原", lat: 35.66842, lng: 139.46892 },
+          { name: "西府", lat: 35.67094, lng: 139.45739 },
+          { name: "谷保", lat: 35.68138, lng: 139.44678 },
+          { name: "矢川", lat: 35.68508, lng: 139.43159 },
+          { name: "西国立", lat: 35.69379, lng: 139.4239 },
+          { name: "立川", lat: 35.69754, lng: 139.4143 },
+      ];
+
+      // 27) 成田線の各駅座標（「bus stop」扱い）
+      const naritaLineCoords = [
+          // 佐倉～成田空港（本線）+ 下総松崎〜銚子 + 我孫子〜成田（支線）
+          // — 佐倉～空港
+          { name: "佐倉", lat: 35.70974, lng: 140.22678 },
+          { name: "酒々井", lat: 35.73185, lng: 140.2754 },
+          { name: "成田", lat: 35.77726, lng: 140.31354 },
+          { name: "空港第２ビル", lat: 35.77296, lng: 140.38761 },
+          { name: "成田空港", lat: 35.76572, lng: 140.3863 },
+          // — 久住〜銚子 間
+          { name: "久住", lat: 35.83218, lng: 140.33887 },
+          { name: "滑河", lat: 35.87706, lng: 140.34786 },
+          { name: "下総神崎", lat: 35.89484, lng: 140.41067 },
+          { name: "大戸", lat: 35.88993, lng: 140.45773 },
+          { name: "佐原", lat: 35.89493, lng: 140.49377 },
+          { name: "香取", lat: 35.89788, lng: 140.53241 },
+          { name: "水郷", lat: 35.88546, lng: 140.57018 },
+          { name: "小見川", lat: 35.84998, lng: 140.6046 },
+          { name: "笹川", lat: 35.83943, lng: 140.65582 },
+          { name: "下総橘", lat: 35.81878, lng: 140.70215 },
+          { name: "下総豊里", lat: 35.793, lng: 140.7209 },
+          { name: "椎柴", lat: 35.76518, lng: 140.7589 },
+          { name: "松岸", lat: 35.73938, lng: 140.7952 },
+          { name: "銚子", lat: 35.72932, lng: 140.82746 },
+          // — 我孫子〜成田
+          { name: "我孫子", lat: 35.8728, lng: 140.01042 },
+          { name: "東我孫子", lat: 35.86898, lng: 140.0476 },
+          { name: "湖北", lat: 35.8672, lng: 140.07794 },
+          { name: "新木", lat: 35.8624, lng: 140.10705 },
+          { name: "布佐", lat: 35.84935, lng: 140.13298 },
+          { name: "木下", lat: 35.83888, lng: 140.14799 },
+          { name: "小林", lat: 35.83074, lng: 140.1931 },
+          { name: "安食", lat: 35.83572, lng: 140.24228 },
+          { name: "下総松崎", lat: 35.80778, lng: 140.27755 },
+      ];
+
+      // 28) 青梅線の各駅座標（「bus stop」扱い）
+      const omeLineCoords = [
+          { name: "立川", lat: 35.69815, lng: 139.41396 },
+          { name: "西立川", lat: 35.70362, lng: 139.39316 },
+          { name: "東中神", lat: 35.70628, lng: 139.3846 },
+          { name: "中神", lat: 35.709, lng: 139.37571 },
+          { name: "昭島", lat: 35.71322, lng: 139.36164 },
+          { name: "拝島", lat: 35.7212, lng: 139.34347 },
+          { name: "牛浜", lat: 35.73434, lng: 139.33379 },
+          { name: "福生", lat: 35.74248, lng: 139.32774 },
+          { name: "羽村", lat: 35.75794, lng: 139.3163 },
+          { name: "小作", lat: 35.77606, lng: 139.30228 },
+          { name: "河辺", lat: 35.78478, lng: 139.28406 },
+          { name: "東青梅", lat: 35.78982, lng: 139.2728 },
+          { name: "青梅", lat: 35.79054, lng: 139.25812 },
+          { name: "宮ノ平", lat: 35.78759, lng: 139.23732 },
+          { name: "日向和田", lat: 35.78864, lng: 139.22954 },
+          { name: "石神前", lat: 35.79683, lng: 139.22514 },
+          { name: "二俣尾", lat: 35.80394, lng: 139.21614 },
+          { name: "軍畑", lat: 35.80758, lng: 139.20765 },
+          { name: "沢井", lat: 35.80595, lng: 139.1934 },
+          { name: "御嶽", lat: 35.80142, lng: 139.18263 },
+          { name: "川井", lat: 35.81376, lng: 139.16422 },
+          { name: "古里", lat: 35.81632, lng: 139.15114 },
+          { name: "鳩ノ巣", lat: 35.8151, lng: 139.12894 },
+          { name: "白丸", lat: 35.81172, lng: 139.11483 },
+          { name: "奥多摩", lat: 35.80942, lng: 139.09694 },
+      ];
+
+      // 29) 相模線の各駅座標（「bus stop」扱い）
+      const sagamiLineCoords = [
+          { name: "茅ケ崎", lat: 35.33068, lng: 139.40702 },
+          { name: "北茅ケ崎", lat: 35.33968, lng: 139.40747 },
+          { name: "香川", lat: 35.3566, lng: 139.39983 },
+          { name: "寒川", lat: 35.3677, lng: 139.38732 },
+          { name: "宮山", lat: 35.38222, lng: 139.37966 },
+          { name: "倉見", lat: 35.39506, lng: 139.37838 },
+          { name: "門沢橋", lat: 35.4067, lng: 139.38006 },
+          { name: "社家", lat: 35.42041, lng: 139.37718 },
+          { name: "厚木", lat: 35.44382, lng: 139.3786 },
+          { name: "海老名", lat: 35.45423, lng: 139.3893 },
+          { name: "入谷", lat: 35.47838, lng: 139.39187 },
+          { name: "相武台下", lat: 35.49278, lng: 139.38632 },
+          { name: "下溝", lat: 35.51832, lng: 139.38051 },
+          { name: "原当麻", lat: 35.529, lng: 139.37536 },
+          { name: "番田", lat: 35.54536, lng: 139.36313 },
+          { name: "上溝", lat: 35.55764, lng: 139.36314 },
+          { name: "南橋本", lat: 35.5804, lng: 139.35242 },
+          { name: "橋本", lat: 35.59484, lng: 139.3451 },
+      ];
+
+      // 30) 埼京線・川越線	の各駅座標（「bus stop」扱い）
+      const saikyoKawagoeLineCoords = [
+          { name: "大崎", lat: 35.61994, lng: 139.72824 },
+          { name: "恵比寿", lat: 35.64668, lng: 139.71012 },
+          { name: "渋谷", lat: 35.65815, lng: 139.70175 },
+          { name: "新宿", lat: 35.6895, lng: 139.7009 },
+          { name: "池袋", lat: 35.7302, lng: 139.71134 },
+          { name: "板橋", lat: 35.74499, lng: 139.71918 },
+          { name: "十条", lat: 35.76039, lng: 139.72225 },
+          { name: "赤羽", lat: 35.77771, lng: 139.72082 },
+          { name: "北赤羽", lat: 35.78703, lng: 139.7058 },
+          { name: "浮間舟渡", lat: 35.79134, lng: 139.69141 },
+          { name: "戸田公園", lat: 35.80776, lng: 139.67835 },
+          { name: "戸田", lat: 35.8176, lng: 139.66961 },
+          { name: "北戸田", lat: 35.82676, lng: 139.66144 },
+          { name: "武蔵浦和", lat: 35.8454, lng: 139.64684 },
+          { name: "中浦和", lat: 35.85382, lng: 139.6374 },
+          { name: "南与野", lat: 35.86736, lng: 139.63106 },
+          { name: "与野本町", lat: 35.88092, lng: 139.626 },
+          { name: "北与野", lat: 35.8907, lng: 139.62848 },
+          { name: "大宮", lat: 35.90626, lng: 139.62396 },
+          { name: "日進", lat: 35.93153, lng: 139.60606 },
+          { name: "西大宮", lat: 35.92196, lng: 139.5789 },
+          { name: "指扇", lat: 35.91696, lng: 139.56497 },
+          { name: "南古谷", lat: 35.90318, lng: 139.51916 },
+          { name: "川越", lat: 35.90668, lng: 139.4832 },
+      ];
+
+      // 31) 湘南新宿ライン	の各駅座標（「bus stop」扱い）
+      const shonanShinjukuLineCoords = [
+          { name: "大船", lat: 35.35416, lng: 139.53116 },
+          { name: "戸塚", lat: 35.40044, lng: 139.53431 },
+          { name: "東戸塚", lat: 35.42996, lng: 139.5565 },
+          { name: "保土ケ谷", lat: 35.44722, lng: 139.60037 },
+          { name: "横浜", lat: 35.46579, lng: 139.6224 },
+          { name: "新川崎", lat: 35.55172, lng: 139.67153 },
+          { name: "武蔵小杉", lat: 35.57468, lng: 139.6635 },
+          { name: "西大井", lat: 35.6017, lng: 139.7216 },
+          { name: "大崎", lat: 35.61994, lng: 139.72824 },
+          { name: "恵比寿", lat: 35.64668, lng: 139.71012 },
+          { name: "渋谷", lat: 35.65815, lng: 139.70175 },
+          { name: "新宿", lat: 35.6895, lng: 139.7009 },
+          { name: "池袋", lat: 35.73028, lng: 139.71108 },
+          { name: "赤羽", lat: 35.77765, lng: 139.72099 },
+          { name: "浦和", lat: 35.85856, lng: 139.65714 },
+          { name: "大宮", lat: 35.90626, lng: 139.62396 },
+      ];
+
+      // 32) 総武本線の各駅座標（「bus stop」扱い）
+      const sobuMainLineCoords = [
+          { name: "千葉", lat: 35.6136, lng: 140.11355 },
+          { name: "東千葉", lat: 35.61712, lng: 140.12242 },
+          { name: "都賀", lat: 35.63602, lng: 140.14918 },
+          { name: "四街道", lat: 35.66279, lng: 140.1649 },
+          { name: "物井", lat: 35.68572, lng: 140.20032 },
+          { name: "佐倉", lat: 35.70974, lng: 140.22678 },
+          { name: "南酒々井", lat: 35.7043, lng: 140.26794 },
+          { name: "榎戸", lat: 35.68408, lng: 140.28812 },
+          { name: "八街", lat: 35.66318, lng: 140.31742 },
+          { name: "日向", lat: 35.6283, lng: 140.36243 },
+          { name: "成東", lat: 35.60854, lng: 140.41028 },
+          { name: "松尾", lat: 35.63636, lng: 140.45808 },
+          { name: "横芝", lat: 35.66178, lng: 140.49078 },
+          { name: "飯倉", lat: 35.68509, lng: 140.52142 },
+          { name: "八日市場", lat: 35.6993, lng: 140.5524 },
+          { name: "干潟", lat: 35.71834, lng: 140.60331 },
+          { name: "旭", lat: 35.72184, lng: 140.65469 },
+          { name: "飯岡", lat: 35.72938, lng: 140.68335 },
+          { name: "倉橋", lat: 35.73776, lng: 140.71399 },
+          { name: "猿田", lat: 35.74735, lng: 140.73736 },
+          { name: "松岸", lat: 35.73938, lng: 140.7952 },
+          { name: "銚子", lat: 35.72932, lng: 140.82746 },
+      ];
+
+      // 33) 総武快速線	の各駅座標（「bus stop」扱い）
+      const sobuRapidLineCoords = [
+          { name: "東京", lat: 35.68122, lng: 139.76653 },
+          { name: "新日本橋", lat: 35.68904, lng: 139.7743 },
+          { name: "馬喰町", lat: 35.69337, lng: 139.78244 },
+          { name: "錦糸町", lat: 35.69672, lng: 139.81432 },
+          { name: "新小岩", lat: 35.71678, lng: 139.85765 },
+          { name: "市川", lat: 35.72887, lng: 139.90817 },
+          { name: "船橋", lat: 35.70174, lng: 139.98468 },
+          { name: "津田沼", lat: 35.69137, lng: 140.02022 },
+          { name: "稲毛", lat: 35.63731, lng: 140.09256 },
+          { name: "千葉", lat: 35.6136, lng: 140.11355 },
+      ];
+
+      // 34) 相鉄直通線	の各駅座標（「bus stop」扱い）
+      const sotetsuDirectLineCoords = [
+          { name: "大崎", lat: 35.61994, lng: 139.72824 },
+          { name: "西大井", lat: 35.6017, lng: 139.7216 },
+          { name: "武蔵小杉", lat: 35.57468, lng: 139.6635 },
+          { name: "羽沢横浜国大", lat: 35.48123, lng: 139.58613 },
+      ];
+
+      // 35) 外房線の各駅座標（「bus stop」扱い）
+      const sotoboLineCoords = [
+          { name: "千葉", lat: 35.61315, lng: 140.11308 },
+          { name: "本千葉", lat: 35.60062, lng: 140.12143 },
+          { name: "蘇我", lat: 35.58216, lng: 140.13074 },
+          { name: "鎌取", lat: 35.56266, lng: 140.17875 },
+          { name: "誉田", lat: 35.547, lng: 140.21378 },
+          { name: "土気", lat: 35.53092, lng: 140.26977 },
+          { name: "大網", lat: 35.5223, lng: 140.31101 },
+          { name: "永田", lat: 35.50324, lng: 140.31127 },
+          { name: "本納", lat: 35.48216, lng: 140.30757 },
+          { name: "新茂原", lat: 35.44943, lng: 140.29972 },
+          { name: "茂原", lat: 35.42683, lng: 140.30407 },
+          { name: "八積", lat: 35.40396, lng: 140.34536 },
+          { name: "上総一ノ宮", lat: 35.37468, lng: 140.36552 },
+          { name: "東浪見", lat: 35.34677, lng: 140.37665 },
+          { name: "太東", lat: 35.3201, lng: 140.38129 },
+          { name: "長者町", lat: 35.29626, lng: 140.38481 },
+          { name: "三門", lat: 35.28292, lng: 140.39144 },
+          { name: "大原", lat: 35.25101, lng: 140.39102 },
+          { name: "浪花", lat: 35.22264, lng: 140.37914 },
+          { name: "御宿", lat: 35.18754, lng: 140.35144 },
+          { name: "勝浦", lat: 35.15262, lng: 140.31197 },
+          { name: "鵜原", lat: 35.14125, lng: 140.27896 },
+          { name: "上総興津", lat: 35.13722, lng: 140.25047 },
+          { name: "行川アイランド", lat: 35.11826, lng: 140.22571 },
+          { name: "安房小湊", lat: 35.12864, lng: 140.18977 },
+          { name: "安房天津", lat: 35.12579, lng: 140.15474 },
+          { name: "安房鴨川", lat: 35.10762, lng: 140.10371 },
+      ];
+
+      // 36) 高崎線の各駅座標（「bus stop」扱い）
+      const takasakiLineCoords = [
+          { name: "東京", lat: 35.68116, lng: 139.76713 },
+          { name: "上野", lat: 35.71376, lng: 139.77706 },
+          { name: "尾久", lat: 35.7468, lng: 139.75387 },
+          { name: "赤羽", lat: 35.77765, lng: 139.72099 },
+          { name: "浦和", lat: 35.85856, lng: 139.65714 },
+          { name: "さいたま新都心", lat: 35.8936, lng: 139.6339 },
+          { name: "大宮", lat: 35.90644, lng: 139.62437 },
+          { name: "宮原", lat: 35.94053, lng: 139.60952 },
+          { name: "上尾", lat: 35.97302, lng: 139.58881 },
+          { name: "北上尾", lat: 35.98515, lng: 139.57758 },
+          { name: "桶川", lat: 35.99844, lng: 139.56422 },
+          { name: "北本", lat: 36.03218, lng: 139.53354 },
+          { name: "鴻巣", lat: 36.05924, lng: 139.50958 },
+          { name: "北鴻巣", lat: 36.0855, lng: 139.47696 },
+          { name: "吹上", lat: 36.10289, lng: 139.4536 },
+          { name: "行田", lat: 36.1139, lng: 139.43208 },
+          { name: "熊谷", lat: 36.13981, lng: 139.38992 },
+          { name: "籠原", lat: 36.17442, lng: 139.33026 },
+          { name: "深谷", lat: 36.19134, lng: 139.28134 },
+          { name: "岡部", lat: 36.20574, lng: 139.23749 },
+          { name: "本庄", lat: 36.2363, lng: 139.18814 },
+          { name: "神保原", lat: 36.25362, lng: 139.14902 },
+          { name: "新町", lat: 36.2731, lng: 139.10532 },
+          { name: "倉賀野", lat: 36.3003, lng: 139.04944 },
+          { name: "高崎", lat: 36.32227, lng: 139.01234 },
+      ];
+
+      // 37) 東金線の各駅座標（「bus stop」扱い）
+      const toganeLineCoords = [
+          { name: "大網", lat: 35.52302, lng: 140.31143 },
+          { name: "福俵", lat: 35.54616, lng: 140.34188 },
+          { name: "東金", lat: 35.5601, lng: 140.3636 },
+          { name: "求名", lat: 35.57984, lng: 140.39618 },
+          { name: "成東", lat: 35.60854, lng: 140.41028 },
+      ];
+
+      // 38) 東海道線の各駅座標（「bus stop」扱い）
+      const tokaidoLineCoords = [
+          { name: "東京", lat: 35.68122, lng: 139.76653 },
+          { name: "新橋", lat: 35.6663, lng: 139.75846 },
+          { name: "品川", lat: 35.62866, lng: 139.73919 },
+          { name: "川崎", lat: 35.53136, lng: 139.69681 },
+          { name: "横浜", lat: 35.46579, lng: 139.6224 },
+          { name: "戸塚", lat: 35.40044, lng: 139.53431 },
+          { name: "大船", lat: 35.35416, lng: 139.53116 },
+          { name: "藤沢", lat: 35.33883, lng: 139.48642 },
+          { name: "辻堂", lat: 35.33684, lng: 139.4459 },
+          { name: "茅ケ崎", lat: 35.33064, lng: 139.408 },
+          { name: "平塚", lat: 35.32755, lng: 139.349 },
+          { name: "大磯", lat: 35.31146, lng: 139.31328 },
+          { name: "二宮", lat: 35.29867, lng: 139.25675 },
+          { name: "国府津", lat: 35.2814, lng: 139.21496 },
+          { name: "鴨宮", lat: 35.27573, lng: 139.18016 },
+          { name: "小田原", lat: 35.2561, lng: 139.15577 },
+          { name: "早川", lat: 35.23872, lng: 139.145 },
+          { name: "根府川", lat: 35.20258, lng: 139.13863 },
+          { name: "真鶴", lat: 35.15692, lng: 139.13225 },
+          { name: "湯河原", lat: 35.14612, lng: 139.1022 },
+          { name: "熱海", lat: 35.10372, lng: 139.07788 },
+      ];
+
+      // 39) 鶴見線の各駅座標（「bus stop」扱い）
+      const tsurumiLineCoords = [
+          { name: "鶴見", lat: 35.50794, lng: 139.67579 },
+          { name: "国道", lat: 35.50077, lng: 139.67571 },
+          { name: "鶴見小野", lat: 35.49702, lng: 139.68128 },
+          { name: "弁天橋", lat: 35.4958, lng: 139.68948 },
+          { name: "浅野", lat: 35.49744, lng: 139.69571 },
+          { name: "新芝浦", lat: 35.49192, lng: 139.70012 },
+          { name: "海芝浦", lat: 35.48613, lng: 139.70068 },
+          { name: "安善", lat: 35.49984, lng: 139.70124 },
+          { name: "大川", lat: 35.4954, lng: 139.71138 },
+          { name: "武蔵白石", lat: 35.50193, lng: 139.70653 },
+          { name: "浜川崎", lat: 35.50966, lng: 139.71354 },
+          { name: "昭和", lat: 35.50685, lng: 139.72392 },
+          { name: "扇町", lat: 35.50174, lng: 139.72242 },
+      ];
+
+      // 40) 内房線の各駅座標（「bus stop」扱い）
+      const uchiboLineCoords = [
+          { name: "千葉", lat: 35.61315, lng: 140.11308 },
+          { name: "本千葉", lat: 35.60062, lng: 140.12143 },
+          { name: "蘇我", lat: 35.58216, lng: 140.13074 },
+          { name: "浜野", lat: 35.5521, lng: 140.13218 },
+          { name: "八幡宿", lat: 35.53616, lng: 140.12004 },
+          { name: "五井", lat: 35.51312, lng: 140.08974 },
+          { name: "姉ケ崎", lat: 35.47863, lng: 140.0419 },
+          { name: "長浦", lat: 35.45028, lng: 139.99542 },
+          { name: "袖ケ浦", lat: 35.4319, lng: 139.95721 },
+          { name: "巌根", lat: 35.41478, lng: 139.9338 },
+          { name: "木更津", lat: 35.38162, lng: 139.92613 },
+          { name: "君津", lat: 35.33359, lng: 139.89572 },
+          { name: "青堀", lat: 35.33056, lng: 139.85888 },
+          { name: "大貫", lat: 35.29162, lng: 139.85562 },
+          { name: "佐貫町", lat: 35.25998, lng: 139.87614 },
+          { name: "上総湊", lat: 35.22183, lng: 139.871 },
+          { name: "竹岡", lat: 35.19759, lng: 139.83003 },
+          { name: "浜金谷", lat: 35.1682, lng: 139.82226 },
+          { name: "保田", lat: 35.14146, lng: 139.83816 },
+          { name: "安房勝山", lat: 35.11406, lng: 139.83341 },
+          { name: "岩井", lat: 35.09305, lng: 139.84987 },
+          { name: "富浦", lat: 35.04623, lng: 139.83776 },
+          { name: "那古船形", lat: 35.02904, lng: 139.8514 },
+          { name: "館山", lat: 34.99592, lng: 139.86199 },
+          { name: "九重", lat: 34.99752, lng: 139.9114 },
+          { name: "千倉", lat: 34.97686, lng: 139.95452 },
+          { name: "千歳", lat: 34.99135, lng: 139.96628 },
+          { name: "南三原", lat: 35.0212, lng: 139.97907 },
+          { name: "和田浦", lat: 35.04171, lng: 140.01961 },
+          { name: "江見", lat: 35.0625, lng: 140.06114 },
+          { name: "太海", lat: 35.08148, lng: 140.09623 },
+          { name: "安房鴨川", lat: 35.10762, lng: 140.10371 },
+      ];
+
+      // 41) 宇都宮線の各駅座標（「bus stop」扱い）
+      const utsunomiyaLineCoords = [
+          { name: "東京", lat: 35.68122, lng: 139.76653 },
+          { name: "上野", lat: 35.71376, lng: 139.77706 },
+          { name: "尾久", lat: 35.7468, lng: 139.75387 },
+          { name: "赤羽", lat: 35.77765, lng: 139.72099 },
+          { name: "浦和", lat: 35.85856, lng: 139.65714 },
+          { name: "さいたま新都心", lat: 35.8936, lng: 139.6339 },
+          { name: "大宮", lat: 35.90626, lng: 139.62396 },
+          { name: "土呂", lat: 35.93192, lng: 139.6322 },
+          { name: "東大宮", lat: 35.94836, lng: 139.64026 },
+          { name: "蓮田", lat: 35.98116, lng: 139.65296 },
+          { name: "白岡", lat: 36.01778, lng: 139.66688 },
+          { name: "新白岡", lat: 36.03825, lng: 139.67189 },
+          { name: "久喜", lat: 36.06581, lng: 139.67738 },
+          { name: "東鷲宮", lat: 36.08964, lng: 139.6797 },
+          { name: "栗橋", lat: 36.13572, lng: 139.69404 },
+          { name: "古河", lat: 36.19442, lng: 139.70972 },
+          { name: "野木", lat: 36.2299, lng: 139.7348 },
+          { name: "間々田", lat: 36.2579, lng: 139.7611 },
+          { name: "小山", lat: 36.31344, lng: 139.80663 },
+          { name: "小金井", lat: 36.37448, lng: 139.84228 },
+          { name: "自治医大", lat: 36.39538, lng: 139.85452 },
+          { name: "石橋", lat: 36.43624, lng: 139.86651 },
+          { name: "雀宮", lat: 36.4939, lng: 139.87708 },
+          { name: "宇都宮", lat: 36.55975, lng: 139.89872 },
+          { name: "岡本", lat: 36.59826, lng: 139.94425 },
+          { name: "宝積寺", lat: 36.63162, lng: 139.97952 },
+          { name: "氏家", lat: 36.68169, lng: 139.9621 },
+          { name: "蒲須坂", lat: 36.72074, lng: 139.9504 },
+          { name: "片岡", lat: 36.75468, lng: 139.94554 },
+          { name: "矢板", lat: 36.80662, lng: 139.93298 },
+          { name: "野崎", lat: 36.84381, lng: 139.9581 },
+          { name: "西那須野", lat: 36.88374, lng: 139.98639 },
+          { name: "那須塩原", lat: 36.93154, lng: 140.02106 },
+          { name: "黒磯", lat: 36.97012, lng: 140.06015 },
+      ];
+
+      // 42) 山手線の各駅座標（「bus stop」扱い）
+      const yamanoteLineCoords = [
+          { name: "大崎", lat: 35.61994, lng: 139.72824 },
+          { name: "五反田", lat: 35.62626, lng: 139.72349 },
+          { name: "目黒", lat: 35.63294, lng: 139.7159 },
+          { name: "恵比寿", lat: 35.64668, lng: 139.71012 },
+          { name: "渋谷", lat: 35.65815, lng: 139.70175 },
+          { name: "原宿", lat: 35.67131, lng: 139.70273 },
+          { name: "代々木", lat: 35.6838, lng: 139.70221 },
+          { name: "新宿", lat: 35.6895, lng: 139.7009 },
+          { name: "新大久保", lat: 35.70093, lng: 139.70026 },
+          { name: "高田馬場", lat: 35.7129, lng: 139.70382 },
+          { name: "目白", lat: 35.72039, lng: 139.70628 },
+          { name: "池袋", lat: 35.73028, lng: 139.71108 },
+          { name: "大塚", lat: 35.73178, lng: 139.72794 },
+          { name: "巣鴨", lat: 35.73372, lng: 139.74035 },
+          { name: "駒込", lat: 35.73686, lng: 139.74806 },
+          { name: "田端", lat: 35.73748, lng: 139.76158 },
+          { name: "西日暮里", lat: 35.73208, lng: 139.76678 },
+          { name: "日暮里", lat: 35.7276, lng: 139.77117 },
+          { name: "鶯谷", lat: 35.72146, lng: 139.77803 },
+          { name: "上野", lat: 35.71376, lng: 139.77706 },
+          { name: "御徒町", lat: 35.7072, lng: 139.77472 },
+          { name: "秋葉原", lat: 35.69854, lng: 139.77304 },
+          { name: "神田", lat: 35.69177, lng: 139.77088 },
+          { name: "東京", lat: 35.68116, lng: 139.76713 },
+          { name: "有楽町", lat: 35.67504, lng: 139.76326 },
+          { name: "新橋", lat: 35.6663, lng: 139.75846 },
+          { name: "浜松町", lat: 35.65541, lng: 139.75712 },
+          { name: "田町", lat: 35.64574, lng: 139.7476 },
+          { name: "高輪ゲートウェイ", lat: 35.63538, lng: 139.74064 },
+          { name: "品川", lat: 35.62814, lng: 139.73854 },
+      ];
+
+      // 43) 横浜線の各駅座標（「bus stop」扱い）
+      const yokohamaLineCoords = [
+          { name: "東神奈川", lat: 35.47788, lng: 139.63316 },
+          { name: "大口", lat: 35.4923, lng: 139.64634 },
+          { name: "菊名", lat: 35.50963, lng: 139.6301 },
+          { name: "新横浜", lat: 35.50676, lng: 139.61742 },
+          { name: "小机", lat: 35.50864, lng: 139.59962 },
+          { name: "鴨居", lat: 35.51085, lng: 139.56695 },
+          { name: "中山", lat: 35.51477, lng: 139.53922 },
+          { name: "十日市場", lat: 35.52626, lng: 139.5165 },
+          { name: "長津田", lat: 35.53163, lng: 139.49528 },
+          { name: "成瀬", lat: 35.53541, lng: 139.4729 },
+          { name: "町田", lat: 35.54154, lng: 139.44659 },
+          { name: "古淵", lat: 35.55598, lng: 139.41924 },
+          { name: "淵野辺", lat: 35.56836, lng: 139.3956 },
+          { name: "矢部", lat: 35.5731, lng: 139.38654 },
+          { name: "相模原", lat: 35.58148, lng: 139.37064 },
+          { name: "橋本", lat: 35.59484, lng: 139.3451 },
+          { name: "相原", lat: 35.60693, lng: 139.33168 },
+          { name: "八王子みなみ野", lat: 35.63129, lng: 139.33098 },
+          { name: "片倉", lat: 35.63968, lng: 139.34116 },
+          { name: "八王子", lat: 35.65504, lng: 139.34025 },
+      ];
+
+      // 44) 横須賀線の各駅座標（「bus stop」扱い）
+      const yokosukaLineCoords = [
+          { name: "東京", lat: 35.68122, lng: 139.76653 },
+          { name: "新橋", lat: 35.6663, lng: 139.75846 },
+          { name: "品川", lat: 35.62866, lng: 139.73919 },
+          { name: "西大井", lat: 35.6017, lng: 139.7216 },
+          { name: "武蔵小杉", lat: 35.57468, lng: 139.6635 },
+          { name: "新川崎", lat: 35.55172, lng: 139.67153 },
+          { name: "横浜", lat: 35.46579, lng: 139.6224 },
+          { name: "保土ケ谷", lat: 35.44722, lng: 139.60037 },
+          { name: "東戸塚", lat: 35.42996, lng: 139.5565 },
+          { name: "戸塚", lat: 35.40044, lng: 139.53431 },
+          { name: "大船", lat: 35.35401, lng: 139.53133 },
+          { name: "北鎌倉", lat: 35.33794, lng: 139.54456 },
+          { name: "鎌倉", lat: 35.31931, lng: 139.55044 },
+          { name: "逗子", lat: 35.29744, lng: 139.57836 },
+          { name: "東逗子", lat: 35.29876, lng: 139.60182 },
+          { name: "田浦", lat: 35.29284, lng: 139.63752 },
+          { name: "横須賀", lat: 35.28422, lng: 139.6549 },
+          { name: "衣笠", lat: 35.25711, lng: 139.66099 },
+          { name: "久里浜", lat: 35.23318, lng: 139.7009 },
+      ];
+         
+      // 2) Google Sheets等の外部API取得（本件ではバス用）
+      async function getApiData() {
+        // 下記はデモ用のスクリプト呼び出し
+        const response = await fetch('https://script.google.com/macros/s/AKfycbyItLNQ4Ekz2F-GgoqJERqFFEfJMF3hRpW4Y9dlyQcxn19E62Dj6w__liz__peptFliLA/exec?action=getApiData');
+        if (!response.ok) {
+          console.error("Failed to fetch API data from GAS");
+          return;
+        }
+        return await response.json();
+      }
+
+      // Google Maps JS APIロード
+      async function loadGoogleMapsApi(apiKey) {
+        return new Promise((resolve, reject) => {
+          window.initGoogleMapsApi = function() {
+            resolve();
+          };
+          const script = document.createElement('script');
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initGoogleMapsApi&v=alpha&libraries=maps3d,marker,places,elevation`;
+          script.async = true;
+          script.defer = true;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      async function main() {
+        const apiData = await getApiData();
+        if (!apiData) {
+          console.error("apiData is undefined");
+          return;
+        }
+        const apiKey = apiData.mapsApiKey;
+        if (!apiKey) {
+          console.error("apiKey is undefined");
+          return;
+        }
+
+        // Google Maps APIをロード
+        await loadGoogleMapsApi(apiKey);
+
+        // 各種初期化
+        await init();
+      }
+
+      async function init() {
+        // (1) まず 2D マップを初期化
+        init2DMap();
+
+        // (2) 3D マップライブラリ読み込み
+        const { Map3DElement: Map3D, Marker3DElement: Marker } 
+          = await google.maps.importLibrary("maps3d");
+        const { PinElement: Pin } = await google.maps.importLibrary("marker");
+        Marker3DElement = Marker; 
+        PinElement = Pin; 
+
+        // 3Dマップ初期表示
+        map3DElement = new Map3D({
+          center: { lat: 35.75, lng: 139.70, altitude: 1000 },
+          tilt: 65,
+          heading: 0,
+          range: 70000,
+          defaultLabelsDisabled: true
+        });
+        // 日本の境界を設定
+        map3DElement.bounds = {
+          south: 24.396308,  // 南端（沖縄付近）
+          west: 122.93457,   // 西端（与那国島付近）
+          north: 45.551483,  // 北端（北海道宗谷岬付近）
+          east: 153.986672   // 東端（小笠原諸島付近）
+        };
+        document.getElementById("map3d").append(map3DElement);
+
+        // 吾妻線
+        const agatsumaPoly3d = document.createElement('gmp-polyline-3d');
+        agatsumaPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        agatsumaPoly3d.setAttribute('stroke-color', 'rgba(0, 174, 149, 0.75)');
+        agatsumaPoly3d.setAttribute('stroke-width', '10');
+        agatsumaPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          agatsumaPoly3d.coordinates = agatsumaLineCoords;
+        });
+        map3DElement.append(agatsumaPoly3d);
+
+        // 中央線快速
+        const chuoRapidPoly3d = document.createElement('gmp-polyline-3d');
+        chuoRapidPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        chuoRapidPoly3d.setAttribute('stroke-color', 'rgba(235, 92, 1, 0.75)');
+        chuoRapidPoly3d.setAttribute('stroke-width', '10');
+        chuoRapidPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          chuoRapidPoly3d.coordinates = chuoRapidLineCoords;
+        });
+        map3DElement.append(chuoRapidPoly3d);
+
+        // 中央・総武各駅停車
+        const chuoSobuLocalPoly3d = document.createElement('gmp-polyline-3d');
+        chuoSobuLocalPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        chuoSobuLocalPoly3d.setAttribute('stroke-color', 'rgba(255, 229, 0, 0.75)');
+        chuoSobuLocalPoly3d.setAttribute('stroke-width', '10');
+        chuoSobuLocalPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          chuoSobuLocalPoly3d.coordinates = chuoSobuLocalLineCoords;
+        });
+        map3DElement.append(chuoSobuLocalPoly3d);
+
+        // 八高線
+        const hachikoPoly3d = document.createElement('gmp-polyline-3d');
+        hachikoPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        hachikoPoly3d.setAttribute('stroke-color', 'rgba(160, 157, 149, 0.75)');
+        hachikoPoly3d.setAttribute('stroke-width', '10');
+        hachikoPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          hachikoPoly3d.coordinates = hachikoLineCoords;
+        });
+        map3DElement.append(hachikoPoly3d);
+
+        // 伊東線
+        const itoPoly3d = document.createElement('gmp-polyline-3d');
+        itoPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        itoPoly3d.setAttribute('stroke-color', 'rgba(255, 152, 69, 0.75)');
+        itoPoly3d.setAttribute('stroke-width', '10');
+        itoPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          itoPoly3d.coordinates = itoLineCoords;
+        });
+        map3DElement.append(itoPoly3d);
+
+        // 五日市線
+        const itsukaichiPoly3d = document.createElement('gmp-polyline-3d');
+        itsukaichiPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        itsukaichiPoly3d.setAttribute('stroke-color', 'rgba(235, 92, 1, 0.75)');
+        itsukaichiPoly3d.setAttribute('stroke-width', '10');
+        itsukaichiPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          itsukaichiPoly3d.coordinates = itsukaichiLineCoords;
+        });
+        map3DElement.append(itsukaichiPoly3d);
+
+        // 常磐線
+        const jobanPoly3d = document.createElement('gmp-polyline-3d');
+        jobanPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        jobanPoly3d.setAttribute('stroke-color', 'rgba(0, 113, 197, 0.75)');
+        jobanPoly3d.setAttribute('stroke-width', '10');
+        jobanPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          jobanPoly3d.coordinates = jobanLineCoords;
+        });
+        map3DElement.append(jobanPoly3d);
+
+        // 常磐線各駅停車
+        const jobanLocalPoly3d = document.createElement('gmp-polyline-3d');
+        jobanLocalPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        jobanLocalPoly3d.setAttribute('stroke-color', 'rgba(158, 158, 159, 0.75)');
+        jobanLocalPoly3d.setAttribute('stroke-width', '10');
+        jobanLocalPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          jobanLocalPoly3d.coordinates = jobanLocalLineCoords;
+        });
+        map3DElement.append(jobanLocalPoly3d);
+
+        // 常磐線快速
+        const jobanRapidPoly3d = document.createElement('gmp-polyline-3d');
+        jobanRapidPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        jobanRapidPoly3d.setAttribute('stroke-color', 'rgba(0, 193, 138, 0.75)');
+        jobanRapidPoly3d.setAttribute('stroke-width', '10');
+        jobanRapidPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          jobanRapidPoly3d.coordinates = jobanRapidLineCoords;
+        });
+        map3DElement.append(jobanRapidPoly3d);
+
+        // 上越線
+        const joetsuPoly3d = document.createElement('gmp-polyline-3d');
+        joetsuPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        joetsuPoly3d.setAttribute('stroke-color', 'rgba(0, 172, 209, 0.75)');
+        joetsuPoly3d.setAttribute('stroke-width', '10');
+        joetsuPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          joetsuPoly3d.coordinates = joetsuLineCoords;
+        });
+        map3DElement.append(joetsuPoly3d);
+
+        // 鹿島線
+        const kashimaPoly3d = document.createElement('gmp-polyline-3d');
+        kashimaPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        kashimaPoly3d.setAttribute('stroke-color', 'rgba(168, 95, 18, 0.75)');
+        kashimaPoly3d.setAttribute('stroke-width', '10');
+        kashimaPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          kashimaPoly3d.coordinates = kashimaLineCoords;
+        });
+        map3DElement.append(kashimaPoly3d);
+
+        // 川越線(川越-高麗川間)
+        const kawagoeBetweenPoly3d = document.createElement('gmp-polyline-3d');
+        kawagoeBetweenPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        kawagoeBetweenPoly3d.setAttribute('stroke-color', 'rgba(166, 169, 171, 0.75)');
+        kawagoeBetweenPoly3d.setAttribute('stroke-width', '10');
+        kawagoeBetweenPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          kawagoeBetweenPoly3d.coordinates = kawagoeLineBetweenCoords;
+        });
+        map3DElement.append(kawagoeBetweenPoly3d);
+
+        // 京浜東北線・根岸線
+        const keihinTohokuNegishiPoly3d = document.createElement('gmp-polyline-3d');
+        keihinTohokuNegishiPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        keihinTohokuNegishiPoly3d.setAttribute('stroke-color', 'rgba(0, 167, 227, 0.75)');
+        keihinTohokuNegishiPoly3d.setAttribute('stroke-width', '10');
+        keihinTohokuNegishiPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          keihinTohokuNegishiPoly3d.coordinates = keihinTohokuNegishiLineCoords;
+        });
+        map3DElement.append(keihinTohokuNegishiPoly3d);
+
+        // 京葉線
+        const keiyoPoly3d = document.createElement('gmp-polyline-3d');
+        keiyoPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        keiyoPoly3d.setAttribute('stroke-color', 'rgba(207, 18, 37, 0.75)');
+        keiyoPoly3d.setAttribute('stroke-width', '10');
+        keiyoPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          keiyoPoly3d.coordinates = keiyoLineCoords;
+        });
+        map3DElement.append(keiyoPoly3d);
+
+        // 久留里線
+        const kururiPoly3d = document.createElement('gmp-polyline-3d');
+        kururiPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        kururiPoly3d.setAttribute('stroke-color', 'rgba(0, 195, 167, 0.75)');
+        kururiPoly3d.setAttribute('stroke-width', '10');
+        kururiPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          kururiPoly3d.coordinates = kururiLineCoords;
+        });
+        map3DElement.append(kururiPoly3d);
+
+        // 武蔵野線
+        const musashinoPoly3d = document.createElement('gmp-polyline-3d');
+        musashinoPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        musashinoPoly3d.setAttribute('stroke-color', 'rgba(235, 92, 1, 0.75)');
+        musashinoPoly3d.setAttribute('stroke-width', '10');
+        musashinoPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          musashinoPoly3d.coordinates = musashinoLineCoords;
+        });
+        map3DElement.append(musashinoPoly3d);
+
+        // 南武線
+        const nambuPoly3d = document.createElement('gmp-polyline-3d');
+        nambuPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        nambuPoly3d.setAttribute('stroke-color', 'rgba(255, 228, 0, 0.75)');
+        nambuPoly3d.setAttribute('stroke-width', '10');
+        nambuPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          nambuPoly3d.coordinates = nambuLineCoords;
+        });
+        map3DElement.append(nambuPoly3d);
+
+        // 成田線
+        const naritaPoly3d = document.createElement('gmp-polyline-3d');
+        naritaPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        naritaPoly3d.setAttribute('stroke-color', 'rgba(0, 187, 133, 0.75)');
+        naritaPoly3d.setAttribute('stroke-width', '10');
+        naritaPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          naritaPoly3d.coordinates = naritaLineCoords;
+        });
+        map3DElement.append(naritaPoly3d);
+
+        // 青梅線
+        const omePoly3d = document.createElement('gmp-polyline-3d');
+        omePoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        omePoly3d.setAttribute('stroke-color', 'rgba(235, 92, 1, 0.75)');
+        omePoly3d.setAttribute('stroke-width', '10');
+        omePoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          omePoly3d.coordinates = omeLineCoords;
+        });
+        map3DElement.append(omePoly3d);
+
+        // 相模線
+        const sagamiPoly3d = document.createElement('gmp-polyline-3d');
+        sagamiPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        sagamiPoly3d.setAttribute('stroke-color', 'rgba(0, 139, 139, 0.75)');
+        sagamiPoly3d.setAttribute('stroke-width', '10');
+        sagamiPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          sagamiPoly3d.coordinates = sagamiLineCoords;
+        });
+        map3DElement.append(sagamiPoly3d);
+
+        // 埼京線・川越線
+        const saikyoKawagoePoly3d = document.createElement('gmp-polyline-3d');
+        saikyoKawagoePoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        saikyoKawagoePoly3d.setAttribute('stroke-color', 'rgba(0, 172, 132, 0.75)');
+        saikyoKawagoePoly3d.setAttribute('stroke-width', '10');
+        saikyoKawagoePoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          saikyoKawagoePoly3d.coordinates = saikyoKawagoeLineCoords;
+        });
+        map3DElement.append(saikyoKawagoePoly3d);
+
+        // 湘南新宿ライン
+        const shonanShinjukuPoly3d = document.createElement('gmp-polyline-3d');
+        shonanShinjukuPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        shonanShinjukuPoly3d.setAttribute('stroke-color', 'rgba(222, 5, 21, 0.75)');
+        shonanShinjukuPoly3d.setAttribute('stroke-width', '10');
+        shonanShinjukuPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          shonanShinjukuPoly3d.coordinates = shonanShinjukuLineCoords;
+        });
+        map3DElement.append(shonanShinjukuPoly3d);
+
+        // 総武本線
+        const sobuMainPoly3d = document.createElement('gmp-polyline-3d');
+        sobuMainPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        sobuMainPoly3d.setAttribute('stroke-color', 'rgba(253, 215, 0, 0.75)');
+        sobuMainPoly3d.setAttribute('stroke-width', '10');
+        sobuMainPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          sobuMainPoly3d.coordinates = sobuMainLineCoords;
+        });
+        map3DElement.append(sobuMainPoly3d);
+
+        // 総武快速線
+        const sobuRapidPoly3d = document.createElement('gmp-polyline-3d');
+        sobuRapidPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        sobuRapidPoly3d.setAttribute('stroke-color', 'rgba(0, 116, 190, 0.75)');
+        sobuRapidPoly3d.setAttribute('stroke-width', '10');
+        sobuRapidPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          sobuRapidPoly3d.coordinates = sobuRapidLineCoords;
+        });
+        map3DElement.append(sobuRapidPoly3d);
+
+        // 相鉄直通線
+        const sotetsuDirectPoly3d = document.createElement('gmp-polyline-3d');
+        sotetsuDirectPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        sotetsuDirectPoly3d.setAttribute('stroke-color', 'rgba(0, 195, 167, 0.75)');
+        sotetsuDirectPoly3d.setAttribute('stroke-width', '10');
+        sotetsuDirectPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          sotetsuDirectPoly3d.coordinates = sotetsuDirectLineCoords;
+        });
+        map3DElement.append(sotetsuDirectPoly3d);
+
+        // 外房線
+        const sotoboPoly3d = document.createElement('gmp-polyline-3d');
+        sotoboPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        sotoboPoly3d.setAttribute('stroke-color', 'rgba(242, 35, 53, 0.75)');
+        sotoboPoly3d.setAttribute('stroke-width', '10');
+        sotoboPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          sotoboPoly3d.coordinates = sotoboLineCoords;
+        });
+        map3DElement.append(sotoboPoly3d);
+
+        // 高崎線
+        const takasakiPoly3d = document.createElement('gmp-polyline-3d');
+        takasakiPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        takasakiPoly3d.setAttribute('stroke-color', 'rgba(255, 152, 69, 0.75)');
+        takasakiPoly3d.setAttribute('stroke-width', '10');
+        takasakiPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          takasakiPoly3d.coordinates = takasakiLineCoords;
+        });
+        map3DElement.append(takasakiPoly3d);
+
+        // 東金線
+        const toganePoly3d = document.createElement('gmp-polyline-3d');
+        toganePoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        toganePoly3d.setAttribute('stroke-color', 'rgba(179, 28, 49, 0.75)');
+        toganePoly3d.setAttribute('stroke-width', '10');
+        toganePoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          toganePoly3d.coordinates = toganeLineCoords;
+        });
+        map3DElement.append(toganePoly3d);
+
+        // 東海道線
+        const tokaidoPoly3d = document.createElement('gmp-polyline-3d');
+        tokaidoPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        tokaidoPoly3d.setAttribute('stroke-color', 'rgba(255, 152, 69, 0.75)');
+        tokaidoPoly3d.setAttribute('stroke-width', '10');
+        tokaidoPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          tokaidoPoly3d.coordinates = tokaidoLineCoords;
+        });
+        map3DElement.append(tokaidoPoly3d);
+
+        // 鶴見線
+        const tsurumiPoly3d = document.createElement('gmp-polyline-3d');
+        tsurumiPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        tsurumiPoly3d.setAttribute('stroke-color', 'rgba(255, 229, 0, 0.75)');
+        tsurumiPoly3d.setAttribute('stroke-width', '10');
+        tsurumiPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          tsurumiPoly3d.coordinates = tsurumiLineCoords;
+        });
+        map3DElement.append(tsurumiPoly3d);
+
+        // 内房線
+        const uchiboPoly3d = document.createElement('gmp-polyline-3d');
+        uchiboPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        uchiboPoly3d.setAttribute('stroke-color', 'rgba(0, 113, 197, 0.75)');
+        uchiboPoly3d.setAttribute('stroke-width', '10');
+        uchiboPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          uchiboPoly3d.coordinates = uchiboLineCoords;
+        });
+        map3DElement.append(uchiboPoly3d);
+
+        // 宇都宮線
+        const utsunomiyaPoly3d = document.createElement('gmp-polyline-3d');
+        utsunomiyaPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        utsunomiyaPoly3d.setAttribute('stroke-color', 'rgba(255, 152, 69, 0.75)');
+        utsunomiyaPoly3d.setAttribute('stroke-width', '10');
+        utsunomiyaPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          utsunomiyaPoly3d.coordinates = utsunomiyaLineCoords;
+        });
+        map3DElement.append(utsunomiyaPoly3d);
+
+        // 山手線
+        const yamanotePoly3d = document.createElement('gmp-polyline-3d');
+        yamanotePoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        yamanotePoly3d.setAttribute('stroke-color', 'rgba(133, 192, 35, 0.75)');
+        yamanotePoly3d.setAttribute('stroke-width', '10');
+        yamanotePoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          yamanotePoly3d.coordinates = yamanoteLineCoords;
+        });
+        map3DElement.append(yamanotePoly3d);
+
+        // 横浜線
+        const yokohamaPoly3d = document.createElement('gmp-polyline-3d');
+        yokohamaPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        yokohamaPoly3d.setAttribute('stroke-color', 'rgba(133, 192, 35, 0.75)');
+        yokohamaPoly3d.setAttribute('stroke-width', '10');
+        yokohamaPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          yokohamaPoly3d.coordinates = yokohamaLineCoords;
+        });
+        map3DElement.append(yokohamaPoly3d);
+
+        // 横須賀線
+        const yokosukaPoly3d = document.createElement('gmp-polyline-3d');
+        yokosukaPoly3d.setAttribute('altitude-mode', 'relative-to-ground');
+        yokosukaPoly3d.setAttribute('stroke-color', 'rgba(0, 116, 190, 0.75)');
+        yokosukaPoly3d.setAttribute('stroke-width', '10');
+        yokosukaPoly3d.setAttribute('stroke-opacity', '0.1');
+        customElements.whenDefined('gmp-polyline-3d').then(() => {
+          yokosukaPoly3d.coordinates = yokosukaLineCoords;
+        });
+        map3DElement.append(yokosukaPoly3d);
+
+        // 位置入力のオートコンプリート初期化
+        await initAutocomplete();
+
+        // 3Dマップイベント → 2Dマップ追従 (要件3)
+        map3DElement.addEventListener('camera_changed', () => {
+          // 3Dマップの center (lat, lng, altitude) を取得し、2Dマップに反映
+          const center3D = map3DElement.center;
+          if (map2d) {
+            map2d.setCenter({ lat: center3D.lat, lng: center3D.lng });
+            // 必要であれば zoom 調整を行う（ここでは固定）
+          }
+        });
+
+        // 現在位置マーカー（デモとして東京駅）
+        /* const initialLat = 35.68122;
+        const initialLng = 139.76653;
+        const elevation = await getElevationforPoint({ lat: initialLat, lng: initialLng });
+        const initialAltitude = elevation ? elevation + 50 : 100;
+
+        currentLocationMarker = new Marker3DElement({
+          position: { lat: initialLat, lng: initialLng, altitude: initialAltitude }
+        });
+        map3DElement.append(currentLocationMarker);
+
+        // 2D用の現在位置マーカー
+        currentLocationMarker2D = new google.maps.Marker({
+          position: { lat: initialLat, lng: initialLng },
+          map: map2d,
+          title: "Current Location",
+          icon: {
+            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+          }
+        });
+        document.getElementById('locationStatus').textContent =
+          `Lat: ${initialLat.toFixed(6)}, Lng: ${initialLng.toFixed(6)}`; */
+
+        // 4) 府中本町, 北府中, ... 全駅のボタンを作成
+        createStationButtons();
+
+        // ★ (1) 初期状態で Bus stop(駅) 表示
+        /* showStations(); */
+      }
+
+      // 2点間のハーサイン距離を計算する関数（メートル単位）
+      function haversineDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371e3; // 地球の半径（メートル）
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ / 2) ** 2 +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; // 距離（メートル）
+      }
+
+      // 最初の駅と最後の駅の距離を計算する関数（メートル単位）
+      function calculateMaxDistance(coords) {
+        if (coords.length < 2) return 0; // 駅が1つ以下の場合は距離を0とする
+
+        const firstStation = coords[0];
+        const lastStation = coords[coords.length - 1];
+        return haversineDistance(firstStation.lat, firstStation.lng, lastStation.lat, lastStation.lng);
+      }
+
+      // 路線の最大距離に基づいて適切な高度を計算する関数
+      function computeAltitude(distance) {
+        const screenWidth = window.innerWidth;
+        let FOV;
+        if (screenWidth <= 768) { // タブレットやスマートフォンの場合
+            FOV = 90 * Math.PI / 180; // 例: 90度
+        } else { // デスクトップの場合
+            FOV = 80 * Math.PI / 180; // 例: 75度
+        }
+        const altitude = (distance / 2) / Math.tan(FOV / 2);
+        const maxAltitude = 200000; // 最大高度を100,000メートルに制限
+        return Math.min(altitude, maxAltitude);
+      }
+
+      const routesData = [ 
+          { routeId: 10, routeName: "吾妻線", coords: agatsumaLineCoords, position: agatsumaLineCoords[0], lat: 36.40241, lng: 138.76891, altitude: 100000, heading: 0, color: "rgba(0, 174, 149, 0.75)" }, 
+          { routeId: 11, routeName: "中央線快速", coords: chuoRapidLineCoords, position: chuoRapidLineCoords[0], lat: 35.56177, lng: 139.52489, altitude: 100000, heading: 0, color: "rgba(235, 92, 1, 0.75)" }, 
+          { routeId: 12, routeName: "中央・総武各駅停車", coords: chuoSobuLocalLineCoords, position: chuoSobuLocalLineCoords[0], lat: 35.55815, lng: 139.83710, altitude: 100000, heading: 0, color: "rgba(255, 229, 0, 0.75)" },
+          { routeId: 13, routeName: "八高線", coords: hachikoLineCoords, position: hachikoLineCoords[0], lat: 35.68889, lng: 139.17558, altitude: 170000, heading: 0, color: "rgba(160, 157, 149, 0.75)" },
+          { routeId: 14, routeName: "伊東線", coords: itoLineCoords, position: itoLineCoords[0], lat: 34.96920, lng: 139.08496, altitude: 50000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 15, routeName: "五日市線", coords: itsukaichiLineCoords, position: itsukaichiLineCoords[0], lat: 35.67667, lng: 139.28580, altitude: 30000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
+          { routeId: 16, routeName: "常磐線", coords: jobanLineCoords, position: jobanLineCoords[0], lat: 36.0786, lng: 140.20624, altitude: 200000, heading: 0, color: "rgba(0, 113, 197, 0.75)" }, //土浦駅
+          { routeId: 17, routeName: "常磐線各駅停車", coords: jobanLocalLineCoords, position: jobanLocalLineCoords[0], lat: 35.72875, lng: 139.94390, altitude: 70000, heading: 0, color: "rgba(158, 158, 159, 0.75)" },
+          { routeId: 18, routeName: "常磐線快速", coords: jobanRapidLineCoords, position: jobanRapidLineCoords[0], lat: 35.60200, lng: 139.90102, altitude: 100000, heading: 0, color: "rgba(0, 193, 138, 0.75)" },
+          { routeId: 19, routeName: "上越線", coords: joetsuLineCoords, position: joetsuLineCoords[0], lat: 36.66502, lng: 139.22316, altitude: 200000, heading: 315, color: "rgba(0, 172, 209, 0.75)" },
+          { routeId: 20, routeName: "鹿島線", coords: kashimaLineCoords, position: kashimaLineCoords[0], lat: 35.89400, lng: 140.56484, altitude: 50000, heading: 0, color: "rgba(168, 95, 18, 0.75)" },
+          { routeId: 21, routeName: "川越線", coords: kawagoeLineBetweenCoords, position: kawagoeLineBetweenCoords[0], lat: 35.85153, lng: 139.41067, altitude: 40000, heading: 0, color: "rgba(166, 169, 171, 0.75)" },
+          { routeId: 22, routeName: "京浜東北線", coords: keihinTohokuNegishiLineCoords, position: keihinTohokuNegishiLineCoords[0], lat: 35.40018, lng: 139.57774, altitude: 150000, heading: 0, color: "rgba(0, 167, 227, 0.75)" },
+          { routeId: 23, routeName: "京葉線", coords: keiyoLineCoords, position: keiyoLineCoords[0], lat: 35.52992, lng: 139.94799, altitude: 70000, heading: 0, color: "rgba(207, 18, 37, 0.75)" },
+          { routeId: 24, routeName: "久留里線", coords: kururiLineCoords, position: kururiLineCoords[0], lat: 35.2574, lng: 140.00782, altitude: 60000, heading: 0, color: "rgba(0, 195, 167, 0.75)" },
+          { routeId: 25, routeName: "武蔵野線", coords: musashinoLineCoords, position: musashinoLineCoords[0], lat: 35.63653, lng: 139.71831, altitude: 100000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
+          { routeId: 26, routeName: "南武線", coords: nambuLineCoords, position: nambuLineCoords[0], lat: 35.46445, lng: 139.55556, altitude: 90000, heading: 0, color: "rgba(255, 228, 0, 0.75)" },
+          { routeId: 27, routeName: "成田線", coords: naritaLineCoords, position: naritaLineCoords[0], lat: 35.65876, lng: 140.45217, altitude: 160000, heading: 0, color: "rgba(0, 187, 133, 0.75)" },
+          { routeId: 28, routeName: "青梅線", coords: omeLineCoords, position: omeLineCoords[0], lat: 35.65378, lng: 139.25545, altitude: 60000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
+          { routeId: 29, routeName: "相模線", coords: sagamiLineCoords, position: sagamiLineCoords[0], lat: 35.36276, lng: 139.37606, altitude: 90000, heading: 0, color: "rgba(0, 139, 139, 0.75)" },
+          { routeId: 30, routeName: "埼京線", coords: saikyoKawagoeLineCoords, position: saikyoKawagoeLineCoords[0], lat: 35.61331, lng: 139.60572, altitude: 120000, heading: 0, color: "rgba(0, 172, 132, 0.75)" },
+          { routeId: 31, routeName: "湘南新宿ライン", coords: shonanShinjukuLineCoords, position: shonanShinjukuLineCoords[0], lat: 35.43021, lng: 139.57756, altitude: 150000, heading: 0, color: "rgba(222, 5, 21, 0.75)" },
+          { routeId: 32, routeName: "総武本線", coords: sobuMainLineCoords, position: sobuMainLineCoords[0], lat: 35.5827, lng: 140.4401, altitude: 140000, heading: 0, color: "rgba(253, 215, 0, 0.75)" },
+          { routeId: 33, routeName: "総武快速線", coords: sobuRapidLineCoords, position: sobuRapidLineCoords[0], lat: 35.59741, lng: 139.94004, altitude: 70000, heading: 0, color: "rgba(0, 116, 190, 0.75)" },
+          { routeId: 34, routeName: "相鉄直通線", coords: sotetsuDirectLineCoords, position: sotetsuDirectLineCoords[0], lat: 35.48059, lng: 139.65719, altitude: 60000, heading: 0, color: "rgba(0, 195, 167, 0.75)" },
+          { routeId: 35, routeName: "外房線", coords: sotoboLineCoords, position: sotoboLineCoords[0], lat: 35.16039, lng: 140.20840, altitude: 160000, heading: 0, color: "rgba(242, 35, 53, 0.75)" },
+          { routeId: 36, routeName: "高崎線", coords: takasakiLineCoords, position: takasakiLineCoords[0], lat: 35.78863, lng: 139.45695, altitude: 180000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 37, routeName: "東金線", coords: toganeLineCoords, position: toganeLineCoords[0], lat: 35.49578, lng: 140.36086, altitude: 50000, heading: 0, color: "rgba(179, 28, 49, 0.75)" },
+          { routeId: 38, routeName: "東海道線", coords: tokaidoLineCoords, position: tokaidoLineCoords[0], lat: 35.26367, lng: 139.43437, altitude: 150000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 39, routeName: "鶴見線", coords: tsurumiLineCoords, position: tsurumiLineCoords[0], lat: 35.48484, lng: 139.69911, altitude: 10000, heading: 0, color: "rgba(255, 229, 0, 0.75)" },
+          { routeId: 40, routeName: "内房線", coords: uchiboLineCoords, position: uchiboLineCoords[0], lat: 35.16039, lng: 140.10840, altitude: 170000, heading: 0, color: "rgba(0, 113, 197, 0.75)" },
+          { routeId: 41, routeName: "宇都宮線", coords: utsunomiyaLineCoords, position: utsunomiyaLineCoords[0], lat: 35.92567, lng: 139.91334, altitude: 200000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 42, routeName: "山手線", coords: yamanoteLineCoords, position: yamanoteLineCoords[0], lat: 35.6270, lng: 139.73042393956396, altitude: 40000, heading: 0, color: "rgba(133, 192, 35, 0.75)" }, //中間地点
+          { routeId: 43, routeName: "横浜線", coords: yokohamaLineCoords, position: yokohamaLineCoords[0], lat: 35.46646, lng: 139.48671, altitude: 70000, heading: 0, color: "rgba(133, 192, 35, 0.75)" },
+          { routeId: 44, routeName: "横須賀線", coords: yokosukaLineCoords, position: yokosukaLineCoords[0], lat: 35.30720, lng: 139.73372, altitude: 150000, heading: 0, color: "rgba(0, 116, 190, 0.75)" }
+      ];
+
+      routesData.forEach(route => {
+        if (route.coords && route.coords.length > 1) {
+            // 最初の駅と最後の駅の中間地点を計算
+            const firstStation = route.coords[0];
+            const lastStation = route.coords[route.coords.length - 1];
+            const midpoint = {
+                lat: (firstStation.lat + lastStation.lat) / 2,
+                lng: (firstStation.lng + lastStation.lng) / 2
+            };
+            route.position = midpoint;
+        }
+      });
+
+      // 駅ボタンを再生成する際に使う一時コンテナ
+      // (新しい路線ボタンを押すたび、以前の駅ボタンを消すために利用)
+      let stationBtnsContainer = null;
+
+      function createStationButtons() {
+        const container = document.getElementById("stationButtonsContainer");
+        container.innerHTML = ""; // 念のため初期化
+
+        // Homeボタンを先に追加
+        const homeBtn = document.createElement("button");
+        homeBtn.textContent = "ホーム";
+        homeBtn.addEventListener("click", () => {
+          // 画面をリロードして初期状態に戻す
+          location.reload();
+        });
+        container.appendChild(homeBtn);
+
+        // Aroundボタン
+        const aroundBtn = document.createElement("button");
+        aroundBtn.textContent = "回転";
+        aroundBtn.addEventListener("click", () => {
+            // flyCameraButtonのクリックイベントをシミュレート
+            const flyCameraButton = document.getElementById('flyCameraButton');
+            if (flyCameraButton) {
+                flyCameraButton.click();
+            } else {
+                console.error("flyCameraButtonが見つかりません");
+            }
+        });
+        // ボタンをコンテナに追加
+        container.appendChild(aroundBtn);
+        
+        // Alertボタン
+        const alertBtn = document.createElement("button");
+        alertBtn.textContent = "運行";
+        alertBtn.addEventListener("click", async () => {
+        await fetchAlertData();  // 後述の fetchAlertData() を呼び出す
+        });
+        container.appendChild(alertBtn);
+
+        // Tripupdatesボタン
+        const tripupdatesBtn = document.createElement("button");
+        tripupdatesBtn.textContent = "ルート";
+        tripupdatesBtn.addEventListener("click", async () => {
+        await fetchTripupdatesData();  // 後述の fetchTripupdatesData() を呼び出す
+        });
+        container.appendChild(tripupdatesBtn);
+
+        // 駅削除ボタン
+        const removeStationsBtn = document.createElement("button");
+        removeStationsBtn.textContent = "駅削除";
+        removeStationsBtn.addEventListener("click", () => {
+            removeMarkers(stationMarkers); // 駅マーカーを削除
+        });
+        removeStationsBtn.style.display = "none"; // 非表示に設定
+        container.appendChild(removeStationsBtn);
+
+        // Vehicle削除ボタン
+        const removeVehiclesBtn = document.createElement("button");
+        removeVehiclesBtn.textContent = "車両削除";
+        removeVehiclesBtn.addEventListener("click", () => {
+            removeMarkers(vehicleMarkers); // Vehicleマーカーを削除
+            // dataTableのデータを初期化
+            const dataTableBody = document.getElementById("dataTable").querySelector("tbody");
+            if (dataTableBody) {
+                dataTableBody.innerHTML = ""; // テーブルの内容をクリア
+            }
+        });
+        removeVehiclesBtn.style.display = "none"; // 非表示に設定
+        container.appendChild(removeVehiclesBtn);
+
+        // 1. 「路線図」ボタン
+        const allLineBtn = document.createElement("button");
+        allLineBtn.textContent = "全体";
+        allLineBtn.addEventListener("click", () => {
+          flyToAllLine();
+          playSound(); 
+        });
+        container.appendChild(allLineBtn);
+
+        // Labelsスイッチ
+        const labelsContainer = document.createElement("div");
+        labelsContainer.style.display = "inline-block";
+        labelsContainer.style.marginLeft = "10px";
+
+        const labelsLabel = document.createElement("label");
+        labelsLabel.textContent = "ラベル";
+        labelsLabel.style.marginRight = "5px";
+
+        const labelsSwitch = document.createElement("input");
+        labelsSwitch.type = "checkbox";
+        labelsSwitch.id = "labelsSwitch";
+        labelsSwitch.checked = false; // デフォルトはオフ
+
+        labelsSwitch.addEventListener("change", () => {
+            playSound();
+            if (map3DElement) {
+                map3DElement.defaultLabelsDisabled = !labelsSwitch.checked;
+            }
+        });
+
+        labelsContainer.appendChild(labelsLabel);
+        labelsContainer.appendChild(labelsSwitch);
+        container.appendChild(labelsContainer);
+
+        const lineBreak = document.createElement("br");
+        container.appendChild(lineBreak);
+
+        // 2. 各路線ボタン + 子ボタンコンテナ
+        routesData.forEach((route) => {
+          const routeBtn = document.createElement("button");
+          routeBtn.textContent = route.routeName;
+          // 背景色を設定
+          routeBtn.style.backgroundColor = "rgba(0, 100, 0, 0.5)";
+
+          // サブコンテナ (Station/Vehicle/駅リスト)
+          const subContainer = document.createElement("div");
+          subContainer.classList.add("route-sub-container"); 
+          subContainer.style.display = "none"; // 初期は非表示
+          
+          // 路線ボタンのクリックイベントに flyTo を追加
+          routeBtn.addEventListener("click", async () => { // async を追加
+              // 駅削除ボタンの処理を実行
+              removeMarkers(stationMarkers);
+
+              // 車両削除ボタンの処理を実行
+              removeMarkers(vehicleMarkers);
+              const stationupdatesTable = document.getElementById("stationupdatesTable");
+              if (stationupdatesTable) {
+              /* tripsTable.innerHTML = ""; */
+                stationupdatesTable.style.display = "none";     // 非表示に設定
+              }
+              
+              const dataTableBody = document.getElementById("dataTable").querySelector("tbody");
+              if (dataTableBody) {
+                  dataTableBody.innerHTML = ""; // テーブルの内容をクリア
+              }
+
+              const dataTable = document.getElementById("dataTable");
+              if (dataTable) {
+                  /* tripsTable.innerHTML = ""; */
+                  dataTable.style.display = "none";     // 非表示に設定
+              }
+
+              const vehicleDetails = document.getElementById("vehicleDetails");
+              if (vehicleDetails) {
+                  /* vehicleDetails.innerHTML = ""; */
+                  vehicleDetails.style.display = "none"; // 非表示に設定
+              }
+
+              const tripsTable = document.getElementById("tripsTable");
+              if (tripsTable) {
+                  /* tripsTable.innerHTML = ""; */
+                  tripsTable.style.display = "none";     // 非表示に設定
+              }
+              // 既に開いている他の路線のsubContainerを非表示にする 
+              const allSubContainers = container.querySelectorAll(".route-sub-container"); 
+              allSubContainers.forEach((otherSubContainer) => {
+                if (otherSubContainer !== subContainer) {
+                  otherSubContainer.style.display = "none";
+                }
+              });
+
+              // その路線の駅を表示
+              showStationsForRoute(route.coords);
+
+              if (route.position) {
+                  let finalAltitude = route.altitude;
+                  if (window.matchMedia("(max-width: 480px)").matches) {
+                    finalAltitude += 20000;
+                  } else if (window.matchMedia("(max-width: 768px)").matches) {
+                    finalAltitude += 10000;
+                  }
+                  map3DElement.flyCameraTo({
+                    endCamera: {
+                      center: { lat: route.lat, lng: route.lng, altitude: finalAltitude },
+                      tilt: 10,
+                      heading: route.heading,
+                      range: 5000
+                    },
+                    durationMillis: 5000
+                  })
+              }
+              // サブコンテナの表示トグル
+              subContainer.style.display = (subContainer.style.display === "none") ? "block" : "none";
+              // 路線名でWikipediaから情報を取得
+              const routeName = route.routeName;
+              const wikiExtractHTML = await fetchWikipediaExtractHTML(routeName);
+
+              if (wikiExtractHTML) {
+                  updateStationupdatesTable(routeName, wikiExtractHTML);
+              } else {
+                  console.warn(`Wikipediaからデータが取得できませんでした: ${routeName}`);
+                  updateStationupdatesTable(routeName, null);
+              }
+          });
+
+          container.appendChild(routeBtn);
+          container.appendChild(subContainer);
+
+          // Station ボタン
+          const stationChildBtn = document.createElement("button");
+          stationChildBtn.textContent = "駅";
+          stationChildBtn.style.backgroundColor = "#001633"; 
+          // ---- Station ボタンを押したら「その路線の駅をマーカー表示」
+          stationChildBtn.addEventListener("click", () => {
+            showStationsForRoute(route.coords);
+          });
+          stationChildBtn.style.display = "none"; // 非表示に設定
+
+          // Vehicle ボタン
+          const vehicleChildBtn = document.createElement("button");
+          vehicleChildBtn.textContent = "車両";
+          vehicleChildBtn.style.backgroundColor = "#001633";
+          vehicleChildBtn.addEventListener("click", () => {
+            console.log("Vehicle button pressed - routeId:", route.routeId);
+            refreshVehiclesForRoute(route.routeId);
+          });
+
+          // 駅ボタン: route.coords の全駅を個別ボタン 
+          route.coords.forEach((station) => {
+            const stationBtn = document.createElement("button");
+            stationBtn.textContent = station.name;
+            stationBtn.style.backgroundColor = "#00377F"; 
+            stationBtn.style.color = "#FFFFFF"; // テキスト色を白に設定
+            /* stationBtn.style.padding = "10px"; // ボタンのパディングを追加
+            stationBtn.style.borderRadius = "5px"; // ボタンの角を丸める
+            stationBtn.style.cursor = "pointer"; // ホバー時のカーソルをポインターに変更
+            stationBtn.style.fontSize = "14px"; // フォントサイズを調整（オプション） */
+            
+            // クリックイベントリスナーを1つに統合
+            stationBtn.addEventListener("click", async () => {
+                // 地図を指定された駅の位置に飛ばす
+                flyToStation(station.lat, station.lng);
+
+                // 駅名に「駅」を付加してWikipediaから駅情報を取得
+                const stationNameWithSuffix = `${station.name}駅`;
+                const wikiExtractHTML = await fetchWikipediaExtractHTML(stationNameWithSuffix);
+
+                // データが取得できた場合にテーブルを更新
+                if (wikiExtractHTML) {
+                    updateStationupdatesTable(stationNameWithSuffix, wikiExtractHTML);
+                } else {
+                    console.warn(`Wikipediaからデータが取得できませんでした: ${stationNameWithSuffix}`);
+                    // 必要に応じてエラーメッセージをUI上に表示
+                    updateStationupdatesTable(stationNameWithSuffix, null);
+                }
+            });
+
+            subContainer.appendChild(stationBtn);
+          });
+
+          // Station, Vehicle を先頭に追加
+          subContainer.insertBefore(stationChildBtn, subContainer.firstChild);
+          subContainer.insertBefore(vehicleChildBtn, stationChildBtn.nextSibling);
+
+        });
+        // テキストを追加
+        const infoText = document.createElement("div");
+        infoText.style.color = "white"; // フォントの色
+        infoText.style.fontSize = "12px"; // フォントサイズ
+        infoText.style.marginTop = "4px"; // 路線ボタンの下にスペースを確保
+
+        infoText.innerHTML = `
+            路線・駅情報については、ウィキメディア REST APIを使用しています。<br>
+            車両情報については、東日本旅客鉄道(JR東日本)によるGTFS-RT形式による鉄道関連リアルタイム情報を使用しています。 / Train realtime information of JR East<br>
+            関東エリアの一部の路線、東京都、神奈川県、埼玉県とその周辺の一部の在来線を対象とします。<br>
+            新幹線は含みません。<br>
+            相模線、鶴見線、南武支線、八高線は含みません。<br>
+            常磐線は羽鳥以南のみ、高崎線は神保原以南のみ、青梅線は立川-青梅間のみを対象とします。<br>
+            中央線は甲府以東を対象とします。<br>
+            臨時列車、他路線直通列車などの一部は含まない場合があります。
+        `;
+
+        container.appendChild(infoText);
+      }
+
+      // 駅やVehicleのマーカーを削除する共通関数
+      function removeMarkers(markers) {
+        markers.forEach(marker => {
+            // 3Dマーカーの削除
+            if (marker.marker3D && map3DElement) {
+                map3DElement.removeChild(marker.marker3D);
+            }
+    
+            // 2Dマーカーの削除
+            if (marker.marker2D) {
+                marker.marker2D.setMap(null);
+            }
+    
+            // 3Dポリゴンの削除
+            if (marker.polygon3D && map3DElement) {
+                map3DElement.removeChild(marker.polygon3D);
+            }
+    
+            // 2Dポリラインの削除（必要に応じて追加）
+            if (marker.polyline2D) {
+                marker.polyline2D.setMap(null);
+            }
+    
+            // 3Dポリラインの削除（必要に応じて追加）
+            if (marker.polyline3D && map3DElement) {
+                map3DElement.removeChild(marker.polyline3D);
+            }
+        });
+    
+        markers.length = 0; // マーカーリストをクリア
+      }
+
+      async function fetchAlertData() {
+        playSound(); // 実行時に再生
+        try {     
+          // Google Sheets APIからデータ取得
+          const apiData = await getApiData();
+          if (!apiData) {
+            console.error("apiData is undefined.");
+            return;
+          }
+      
+          const apiKey = apiData.apiKey;
+          const sheetId = apiData.sheetId;
+          const range = 'alert!A2:D500';
+          const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      
+          console.log("Fetching data from Google Sheets URL:", url);
+      
+          const response = await fetch(url).catch((error) => {
+            throw new Error("Failed to fetch Google Sheets data: " + error.message);
+          });
+      
+          if (!response.ok) {
+            console.error("Failed to fetch Google Sheets data. Status:", response.status);
+            return;
+          }
+      
+          const data = await response.json();
+          if (!data || !data.values) {
+            console.error("No data found in Google Sheets response.");
+            return;
+          }
+      
+          playgetSound(); // スプシからデータ取得後に再生
+      
+          const rows = data.values || [];
+          console.log("Google Sheets data rows:", rows);
+          updateAlertTable(rows);
+          alertTable.style.display = 'table';
+        } catch (error) {
+          console.error("Error in fetchAlertData:", error.message);
+        }
+      }
+
+      async function fetchTripupdatesData() {
+        playSound(); // 実行時に再生
+        try {
+          const apiData = await getApiData();
+          if (!apiData) {
+            console.error("apiData is undefined.");
+            return;
+          }
+      
+          const apiKey = apiData.apiKey;
+          const sheetId = apiData.sheetId;
+          const range = 'tripupdates!A2:D500';
+          const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      
+          console.log("Fetching data from Google Sheets URL:", url);
+      
+          const response = await fetch(url).catch((error) => {
+            throw new Error("Failed to fetch Google Sheets data: " + error.message);
+          });
+      
+          if (!response.ok) {
+            console.error("Failed to fetch Google Sheets data. Status:", response.status);
+            return;
+          }
+      
+          const data = await response.json();
+          if (!data || !data.values) {
+            console.error("No data found in Google Sheets response.");
+            return;
+          }
+      
+          playgetSound(); // スプシからデータ取得後に再生
+      
+          const rows = data.values || [];
+          console.log("Google Sheets data rows:", rows);
+          updateTripupdatesTable(rows);
+          tripupdatesTable.style.display = 'table';
+        } catch (error) {
+          console.error("Error in fetchTripupdatesData:", error.message);
+        }
+      }
+
+      // Wikipediaから駅のextract_htmlを取得する関数
+      async function fetchWikipediaExtractHTML(stationName) {
+        try {
+            // 駅名をエンコードしてAPI URLを生成
+            const apiUrl = `https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(stationName)}`;
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                console.error(`Wikipedia APIエラー: ステータス ${response.status}`);
+                return null;
+            }
+            const data = await response.json();
+            return data.extract_html || null; // extract_htmlを返す
+        } catch (error) {
+            console.error("Wikipediaデータの取得中にエラーが発生しました:", error);
+            return null;
+        }
+      }
+
+      function updateAlertTable(rows) {
+        const tableBody = document.getElementById('alertTable').querySelector('tbody');
+        tableBody.innerHTML = '';  // 既存行をクリア
+        rows.forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach(cell => {
+            const td = document.createElement('td');
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tableBody.appendChild(tr);
+        });
+      }
+
+      function updateTripupdatesTable(rows) {
+        const tableBody = document.getElementById('tripupdatesTable').querySelector('tbody');
+        tableBody.innerHTML = '';  // 既存行をクリア
+        rows.forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach(cell => {
+            const td = document.createElement('td');
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tableBody.appendChild(tr);
+        });
+      }
+
+      // StationupdatesTableを更新する関数（ヘッダー行なし）
+      function updateStationupdatesTable(stationName, extractHTML) {
+        const table = document.getElementById("stationupdatesTable"); // IDを確認
+
+        if (!table) {
+            console.error("stationupdatesTable要素が見つかりません。");
+            return;
+        }
+
+        // 既存のテーブルデータをクリア
+        table.innerHTML = "";
+
+        // データ行を作成
+        const tr = document.createElement("tr");
+
+        // 駅名セル
+        const tdName = document.createElement("td");
+        tdName.textContent = stationName;
+        tdName.style.padding = "10px";
+        tdName.style.border = "1px solid #ddd";
+        tr.appendChild(tdName);
+
+        // 駅情報セル
+        const tdInfo = document.createElement("td");
+        if (extractHTML) {
+            tdInfo.innerHTML = extractHTML; // HTMLを挿入
+        } else {
+            tdInfo.textContent = "情報が見つかりませんでした。";
+        }
+        tdInfo.style.padding = "10px";
+        tdInfo.style.border = "1px solid #ddd";
+        tr.appendChild(tdInfo);
+        table.appendChild(tr);
+        table.style.display = 'table';
+      }
+
+      // Alertテーブルの表示・非表示を切り替えるイベント
+      document.getElementById('alertToggleButton').addEventListener('click', () => {
+          const table = document.getElementById('alertTable');
+          if (table.style.display === 'none') {
+          table.style.display = 'table';
+          } else {
+          table.style.display = 'none';
+          }
+      });
+
+      // tripupdatesテーブルの表示・非表示を切り替えるイベント
+      document.getElementById('tripupdatesButton').addEventListener('click', () => {
+        const table = document.getElementById('tripupdatesTable');
+        if (table.style.display === 'none') {
+        table.style.display = 'table';
+        } else {
+        table.style.display = 'none';
+        }
+      });
+
+      // stationupdatesテーブルの表示・非表示を切り替えるイベント
+      document.getElementById('stationupdatesButton').addEventListener('click', () => {
+        const table = document.getElementById('stationupdatesTable');
+        if (table.style.display === 'none') {
+        table.style.display = 'table';
+        } else {
+        table.style.display = 'none';
+        }
+      });
+
+      function flyToAllLine() {
+        const defaultCenter = { lat: 35.75, lng: 139.70, altitude: 1000 }; // altitude を追加
+        const defaultTilt = 65;
+        const defaultHeading = 0;
+        const defaultRange = 70000; // 全体を見渡せる範囲
+   
+        map3DElement.flyCameraTo({
+            endCamera: {
+                center: defaultCenter,
+                tilt: defaultTilt,
+                heading: defaultHeading,
+                range: defaultRange
+            },
+            durationMillis: 5000
+        });
+        // 駅削除ボタンの処理を実行
+        removeMarkers(stationMarkers);
+        // 車両削除ボタンの処理を実行
+        removeMarkers(vehicleMarkers);
+        const dataTableBody = document.getElementById("dataTable").querySelector("tbody");
+        if (dataTableBody) {
+            dataTableBody.innerHTML = ""; // テーブルの内容をクリア
+        }
+
+        const stationupdatesTable = document.getElementById("stationupdatesTable");
+        if (stationupdatesTable) {
+            /* tripsTable.innerHTML = ""; */
+            stationupdatesTable.style.display = "none";     // 非表示に設定
+        }
+
+        const dataTable = document.getElementById("dataTable");
+        if (dataTable) {
+            /* tripsTable.innerHTML = ""; */
+            dataTable.style.display = "none";     // 非表示に設定
+        }
+
+        const vehicleDetails = document.getElementById("vehicleDetails");
+        if (vehicleDetails) {
+            /* vehicleDetails.innerHTML = ""; */
+            vehicleDetails.style.display = "none"; // 非表示に設定
+        }
+
+        const tripsTable = document.getElementById("tripsTable");
+        if (tripsTable) {
+            /* tripsTable.innerHTML = ""; */
+            tripsTable.style.display = "none";     // 非表示に設定
+        }
+      }
+
+      function flyToStation(lat, lng) {
+        // 適宜 elevation を取得する場合はここで取得し、alt に反映
+        const alt = 100; // 例: 固定で 50
+      
+        map3DElement.flyCameraTo({
+          endCamera: {
+            center: { lat, lng, altitude: alt },
+            tilt: 80,
+            heading: 0,
+            range: 1000
+          },
+          durationMillis: 5000
+        })
+      }
+
+      // 2Dマップ初期化
+      function init2DMap() {
+        // 武蔵野線全域を表示
+        const bounds = new google.maps.LatLngBounds();
+        musashinoLineCoords.forEach(coord => bounds.extend(coord));
+
+        map2d = new google.maps.Map(document.getElementById("map2d"), {});
+        map2d.fitBounds(bounds);
+
+        // 2D用のポリライン
+        /* const musashinoLinePolyline2D = new google.maps.Polyline({
+          path: musashinoLineCoords.map(c => ({ lat: c.lat, lng: c.lng })),
+          geodesic: true,
+          strokeColor: '#ADD8E6',
+          strokeOpacity: 1.0,
+          strokeWeight: 4,
+          map: map2d
+        });*/
+      }
+
+      // オートコンプリート
+      async function initAutocomplete() {
+        playSound();
+        const { Autocomplete } = await google.maps.importLibrary("places");
+        const inputs = ["pac-input", "placeInput"];
+        inputs.forEach(inputId => {
+          const autocomplete = new Autocomplete(
+            document.getElementById(inputId),
+            {
+              fields: ["geometry", "name", "place_id"],
+            }
+          );
+          autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry || !place.geometry.viewport) {
+              window.alert("No viewport for input: " + place.name);
+              return;
+            }
+            if (inputId === "placeInput") {
+              window.placeInputLastPlace = place;
+              zoomToViewport(place.geometry);
+            }
+            if (inputId === "pac-input") {
+              zoomToViewport(place.geometry);
+            }
+          });
+        });
+      }
+
+      const zoomToViewport = async (geometry) => {
+        let viewport = geometry.viewport;
+        let locationPoints = [
+          { lat: viewport.getNorthEast().lat(), lng: viewport.getNorthEast().lng(), altitude: 500 },
+          { lat: viewport.getSouthWest().lat(), lng: viewport.getNorthEast().lng(), altitude: 500 },
+          { lat: viewport.getSouthWest().lat(), lng: viewport.getSouthWest().lng(), altitude: 500 },
+          { lat: viewport.getNorthEast().lat(), lng: viewport.getSouthWest().lng(), altitude: 500 },
+        ];
+        
+        fillLocationPointsUI(locationPoints);
+        
+        let elevation = await getElevationforPoint(geometry.location);
+        if (map3DElement) {
+          map3DElement.center = {
+            lat: geometry.location.lat(),
+            lng: geometry.location.lng(),
+            altitude: elevation + 50
+          };
+          map3DElement.heading = 0;
+          map3DElement.range = 500;
+          map3DElement.tilt = 65;
+        }
+        playgetSound();
+
+        if (map2d) {
+          map2d.fitBounds(viewport);
+        }
+      };
+
+      function fillLocationPointsUI(locationPoints) {
+        if (!locationPoints || locationPoints.length < 4) return;
+        document.getElementById("locPoint1Lat").value = locationPoints[0].lat.toFixed(6);
+        document.getElementById("locPoint1Lng").value = locationPoints[0].lng.toFixed(6);
+        document.getElementById("locPoint2Lat").value = locationPoints[1].lat.toFixed(6);
+        document.getElementById("locPoint2Lng").value = locationPoints[1].lng.toFixed(6);
+        document.getElementById("locPoint3Lat").value = locationPoints[2].lat.toFixed(6);
+        document.getElementById("locPoint3Lng").value = locationPoints[2].lng.toFixed(6);
+        document.getElementById("locPoint4Lat").value = locationPoints[3].lat.toFixed(6);
+        document.getElementById("locPoint4Lng").value = locationPoints[3].lng.toFixed(6);
+      }
+
+      async function getElevationforPoint(location) {
+        const { ElevationService } = await google.maps.importLibrary("elevation");
+        const elevatorService = new google.maps.ElevationService();
+        const elevationResponse = await elevatorService.getElevationForLocations({
+          locations: [location],
+        });
+        if (!(elevationResponse.results && elevationResponse.results.length)) {
+          return null;
+        }
+        const elevation = elevationResponse.results[0].elevation || 10;
+        return elevation;
+      }
+
+      // 現在位置ボタン
+      document.getElementById('getCurrentLocationButton').addEventListener('click', () => {
+        playSound();
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const elevation = await getElevationforPoint({ lat: latitude, lng: longitude });
+
+            if (map3DElement) {
+              map3DElement.center = { lat: latitude, lng: longitude, altitude: elevation + 50 };
+              map3DElement.heading = 0;
+              map3DElement.range = 500;
+              map3DElement.tilt = 65;
+            }
+            document.getElementById('locationStatus').textContent =
+              `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`;
+
+            // 3Dマーカー更新
+            if (currentLocationMarker) {
+              map3DElement.removeChild(currentLocationMarker);
+            }
+            currentLocationMarker = new Marker3DElement({
+              position: { lat: latitude, lng: longitude, altitude: elevation }
+            });
+            map3DElement.append(currentLocationMarker);
+            playgetSound();
+
+            // 2Dマップの中心・マーカー更新
+            if (map2d) {
+              map2d.setCenter({ lat: latitude, lng: longitude });
+            }
+            if (currentLocationMarker2D) {
+              currentLocationMarker2D.setMap(null);
+            }
+            currentLocationMarker2D = new google.maps.Marker({
+              position: { lat: latitude, lng: longitude },
+              map: map2d,
+              title: "Current Location",
+              icon: {
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+              }
+            });
+
+          }, (error) => {
+            console.error('位置取得不可: ', error);
+            alert('現在位置を取得できませんでした。ブラウザで位置情報許可設定を有効にしてください。');
+          });
+        } else {
+          alert('お使いのブラウザは位置情報取得に対応していません。');
+        }
+      });
+
+      async function setCustomLocation() {
+        const location = document.getElementById('placeInput').value;
+        if (!location) {
+          alert("地名やランドマーク名を入力してください");
+          return;
+        }
+        const apiData = await getApiData();
+        if (!apiData) {
+          console.error("apiData is undefined");
+          return;
+        }
+        const apiKey = apiData.mapsApiKey;
+        if (!apiKey) {
+          console.error("apiKey is undefined");
+          return;
+        }
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+        try {
+          const response = await fetch(geocodeUrl);
+          const data = await response.json();
+          if (data.status === "OK") {
+            const latLng = data.results[0].geometry.location;
+            const latitude = latLng.lat;
+            const longitude = latLng.lng;
+            const elevation = await getElevationforPoint({ lat: latitude, lng: longitude });
+
+            // 3Dマップ移動
+            if (map3DElement) {
+              map3DElement.center = { lat: latitude, lng: longitude, altitude: elevation + 50 };
+              map3DElement.heading = 0;
+              map3DElement.range = 500;
+              map3DElement.tilt = 65;
+            }
+            document.getElementById('locationStatus').textContent =
+              `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`;
+
+            // 3Dマーカー更新
+            if (currentLocationMarker) {
+              map3DElement.removeChild(currentLocationMarker);
+            }
+            currentLocationMarker = new Marker3DElement({
+              position: { lat: latitude, lng: longitude, altitude: elevation }
+            });
+            map3DElement.append(currentLocationMarker);
+            playgetSound();
+
+            // 2Dマップ移動
+            if (map2d) {
+              map2d.setCenter({ lat: latitude, lng: longitude });
+            }
+            if (currentLocationMarker2D) {
+              currentLocationMarker2D.setMap(null);
+            }
+            currentLocationMarker2D = new google.maps.Marker({
+              position: { lat: latitude, lng: longitude },
+              map: map2d,
+              title: "Current Location",
+              icon: {
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+              }
+            });
+
+          } else {
+            alert("位置情報が取得できませんでした。別の場所を試してください。");
+          }
+        } catch (error) {
+          console.error("Error fetching geocode data:", error);
+          alert("エラーが発生しました。後でもう一度お試しください。");
+        }
+      }
+
+      document.getElementById('setCustomLocationButton').addEventListener('click', () => {
+        playSound();
+        setCustomLocation();
+      });
+
+      // ★ (2) bus stop表示: musashinoLineCoords のみ使う
+      let stationMarkers = []; // { marker3D, marker2D }をまとめる
+      function showStations() {
+        playSound();
+
+        // 既存ステーションマーカーを削除
+        stationMarkers.forEach(item => {
+          if (item.marker3D) {
+            map3DElement.removeChild(item.marker3D);
+          }
+          if (item.marker2D) {
+            item.marker2D.setMap(null);
+          }
+        });
+        stationMarkers = [];
+
+        // musashinoLineCoords の各駅をマーカー表示
+        musashinoLineCoords.forEach(async (station) => {
+          // elevation 取得（バッファとして altitude 50 程度足す）
+          const elevation = await getElevationforPoint({ lat: station.lat, lng: station.lng });
+          const altitude = (elevation || 0) + 10;
+
+          // 3Dマーカー
+          const marker3D = new Marker3DElement({
+            position: {
+              lat: station.lat,
+              lng: station.lng,
+              altitude: altitude
+            },
+            label: station.name
+          });
+          // ピンの装飾
+          const pinBg = new PinElement({
+            scale: 0.7,
+            background: 'white',
+            borderColor: 'black',
+            glyph: 'S',
+            glyphColor: 'black',
+          });
+          marker3D.append(pinBg);
+          map3DElement.append(marker3D);
+
+          // 2Dマーカー
+          /*const marker2D = new google.maps.Marker({
+            position: { lat: station.lat, lng: station.lng },
+            map: map2d,
+            label: {
+              text: station.name,
+              color: 'black',
+              fontSize: '10px',
+            },
+            icon: {
+              path: 'M -10 -14 L 10 -14 L 10 0 L 0 6 L -10 0 z',
+              fillColor: 'white',
+              fillOpacity: 1.0,
+              strokeColor: 'black',
+              strokeWeight: 1,
+              scale: 0.7,
+              anchor: new google.maps.Point(0, 0),
+              labelOrigin: new google.maps.Point(0, -30),
+            },
+          });*/
+
+          // クリックイベント (3D/2D共通)
+          marker3D.addEventListener('click', () => {
+            alert(`駅名: ${station.name}`);
+            playgetSound();
+          });
+          marker2D.addListener('click', () => {
+            alert(`駅名: ${station.name}`);
+            playgetSound();
+          });
+
+          stationMarkers.push({ marker3D, marker2D });
+        });
+      }
+
+      async function showStationsForRoute(routeCoords) {
+        playSound();
+
+        /* // 既存ステーションマーカーを削除（以前の showStations() 同等の処理）
+        stationMarkers.forEach(item => {
+          if (item.marker3D) {
+            map3DElement.removeChild(item.marker3D);
+          }
+          if (item.marker2D) {
+            item.marker2D.setMap(null);
+          }
+        }); */
+        stationMarkers = [];
+
+        // 該当路線の coords をマーカー表示
+        for (const station of routeCoords) {
+          const elevation = await getElevationforPoint({ lat: station.lat, lng: station.lng });
+          const altitude = (elevation || 0) + 10;
+
+          // 3Dマーカー
+          const marker3D = new Marker3DElement({
+            position: {
+              lat: station.lat,
+              lng: station.lng,
+              altitude: altitude
+            },
+            label: station.name
+          });
+          const pinBg = new PinElement({
+            scale: 0.5,
+            background: 'white',
+            borderColor: 'black',
+            glyph: '',
+            glyphColor: 'black',
+          });
+          marker3D.append(pinBg);
+          map3DElement.append(marker3D);
+
+          // 2Dマーカー例
+          const marker2D = new google.maps.Marker({
+            position: { lat: station.lat, lng: station.lng },
+            map: map2d,
+            label: {
+              text: station.name,
+              color: 'black',
+              fontSize: '10px',
+            },
+            icon: {
+              path: 'M -10 -14 L 10 -14 L 10 0 L 0 6 L -10 0 z',
+              fillColor: 'white',
+              fillOpacity: 1.0,
+              strokeColor: 'black',
+              strokeWeight: 1,
+              scale: 0.7,
+              anchor: new google.maps.Point(0, 0),
+              labelOrigin: new google.maps.Point(0, -30),
+            },
+          });
+
+          // クリックイベント(3D/2D共通)
+          marker3D.addEventListener('click', () => {
+            alert(`駅名: ${station.name}`);
+            playgetSound();
+          });
+          marker2D.addListener('click', () => {
+            alert(`駅名: ${station.name}`);
+            playgetSound();
+          }); 
+
+          stationMarkers.push({ marker3D, marker2D });
+        }
+      }
+
+      /**
+       * Vehicleボタン用: 「含まれている路線の車両のみ」表示するための例
+       *  - 既存の refreshButton と同じ動作(=全部取得)ではなく、
+       *    routeId をサーバーに送って「該当路線の車両データ」だけ返す仕組みを想定
+       */
+      async function refreshVehiclesForRoute(routeId) { 
+        playSound();
+
+        // sendRequest(vehicleId, routeId) のように第2引数に routeId を付与するイメージ
+        await sendRequest('', routeId);
+
+        // 遅延してから updateMap() 実行（refreshButton と同様の流れ）
+        setTimeout(async () => {
+          // updateMap() も routeId を受け取って絞り込むのであれば、引数追加など要改修
+          // (ここでは簡略的に全体表示としてます。サーバーサイドから既にフィルタ済み想定)
+          // await updateMap(markers, "dataTable");
+          await updateMap(markers, "dataTable", false, 0, false, routeId);
+        }, 1000);
+
+        playAudioThreeTimes();
+        dataTable.style.display = 'table';
+      }
+
+      async function sendRequest(vehicleId = '', routeId = '') {
+        let requestUrl = `https://script.google.com/macros/s/AKfycbyItLNQ4Ekz2F-GgoqJERqFFEfJMF3hRpW4Y9dlyQcxn19E62Dj6w__liz__peptFliLA/exec`;
+        let params = [];
+        if (vehicleId) {
+          params.push(`vehicleID=${encodeURIComponent(vehicleId)}`);
+        }
+        if (routeId) {
+          params.push(`routeID=${encodeURIComponent(routeId)}`);
+        }
+        if (currentLocationMarker) {
+          const { lat, lng } = currentLocationMarker.position;
+          params.push(`latitude=${encodeURIComponent(lat)}`);
+          params.push(`longitude=${encodeURIComponent(lng)}`);
+        }
+        if (params.length > 0) {
+          requestUrl += '?' + params.join('&');
+        }
+        console.log("sendRequest -> requestUrl:", requestUrl); // ★ これを追加
+        const response = await fetch(requestUrl);
+        if (!response.ok) {
+          console.error('Request failed');
+        }
+        const responseText = await response.text();
+        console.log("sendRequest -> Response Text:", responseText);
+      }
+
+      document.getElementById('showStationsButton').addEventListener('click', () => {
+        showStations();
+      });
+
+      document.getElementById('clearStationMarkersButton').addEventListener('click', () => {
+        stationMarkers.forEach(item => {
+          if (item.marker3D) {
+            map3DElement.removeChild(item.marker3D);
+          }
+          if (item.marker2D) {
+            item.marker2D.setMap(null);
+          }
+        });
+        stationMarkers = [];
+        playSound();
+      });
+
+      // 以下、バス情報周り(外部シート) は既存まま
+      let markers = {};
+      let executionMarkers = {};
+      const executionColors = ["yellow","orange","cyan","mediumorchid","khaki","magenta","burlywood",
+          "aliceblue","chocolate","tan"];
+      const alphabetColors = [
+          "yellow","orange","cyan","mediumorchid","khaki","magenta","burlywood",
+          "aliceblue","chocolate","tan","pink","lime","limegreen","lightsteelblue","mediumorchid","olive",
+          "aqua","peachpuff","gray","silver","gold","darkgoldenrod","coral","darkcyan",
+          "darkorange","forestgreen"
+      ];
+      const alphabetIDs = [];
+      for (let i = 0; i < 500; i++) {
+          let id = String.fromCharCode(97 + (i % 26));
+          let prefix = Math.floor(i / 26);
+          alphabetIDs.push(prefix ? String.fromCharCode(96 + prefix) + id : id);
+      }
+
+      async function fetchSheetData() {
+        const apiData = await getApiData();
+        if (!apiData) {
+          console.error("apiData is undefined");
+          return;
+        }
+        const apiKey = apiData.apiKey;
+        const sheetId = apiData.sheetId;
+        const range = apiData.range;
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error("Failed to fetch data from Google Sheets");
+            return null;
+        }
+        const data = await response.json();
+        return data.values || [];
+      }
+
+      function haversineDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371e3;
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+      }
+
+      // 2D 用バスマーカー
+      function createMarker2D(position, label, color, isExecution) {
+        return new google.maps.Marker({
+          position: { lat: position.lat, lng: position.lng },
+          map: map2d,
+          label: {
+            text: label,
+            color: "#000000",
+            fontWeight: "normal",
+            fontSize: "12px"
+          },
+          icon: {
+            path: "M -12 8 H 12 L 14 6 V -2 L 12 -4 H -12 L -14 -2 V 6 L -12 8 Z M -10 10 A 2 2 0 1 1 -6 10 A 2 2 0 1 1 -10 10 Z M 6 10 A 2 2 0 1 1 10 10 A 2 2 0 1 1 6 10 Z",
+            fillColor: color,
+            fillOpacity: 1.0,
+            strokeColor: "#0000FF",
+            strokeWeight: 1,
+            anchor: new google.maps.Point(0, 0),
+            labelOrigin: new google.maps.Point(0, 2),
+            scale: 1.4
+          }
+        });
+      }
+
+      function createPolyline2D(startLat, startLng, endLat, endLng, color) {
+        const path = [
+          { lat: startLat, lng: startLng },
+          { lat: endLat, lng: endLng },
+        ];
+        const polyline2D = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: color,
+          strokeOpacity: 1.0,
+          strokeWeight: 4,
+          map: map2d
+        });
+        return polyline2D;
+      }
+
+      // サウンド系
+      function playgetSound() {
+        const audio = new Audio('https://kickboxerj0322.github.io/bus-map-3d/071_toy-button-105724.mp3');
+        audio.play();
+      }
+      function playAudioThreeTimes() {
+        const audio = new Audio('https://kickboxerj0322.github.io/bus-map-3d/072_menu-click-89198.mp3');
+        let playCount = 0; 
+        function playNext() {
+            if (playCount < 3) {
+                audio.play();
+                playCount++;
+            }
+        }
+        audio.onended = playNext;
+        playNext();
+      }
+      function playSound() {
+        const audio = new Audio('https://kickboxerj0322.github.io/bus-map-3d/073_start-13691.mp3');
+        audio.play();
+      }
+
+      function updateTableRows(data, tableId, updateCount = 0) {
+        const tableBody = document.getElementById(tableId).querySelector("tbody");
+        tableBody.innerHTML = ""; // 既存のデータをクリア
+        data.forEach((row, index) => {
+            let existingRow = tableBody.querySelector(`tr[data-vehicle-id="${row[0]}"]`);
+            if (!existingRow) {
+                existingRow = document.createElement("tr");
+                existingRow.setAttribute("data-vehicle-id", row[0]);
+
+                /* const alphabetIdCell = document.createElement("td");
+                alphabetIdCell.textContent = alphabetIDs[index];
+                existingRow.appendChild(alphabetIdCell); */
+
+                const alphabetIdCell = document.createElement("td");
+                alphabetIdCell.innerHTML = `
+                  <button class="alpha-btn"
+                          data-lat="${row[1]}"
+                          data-lng="${row[2]}">
+                    ${alphabetIDs[index]}
+                  </button>
+                `;
+                existingRow.appendChild(alphabetIdCell);
+                
+                // ボタンクリックでflyToStation()実行
+                const btn = alphabetIdCell.querySelector(".alpha-btn");
+                btn.addEventListener("click", (e) => {
+                  playSound();
+                  const lat = parseFloat(e.target.getAttribute("data-lat"));
+                  const lng = parseFloat(e.target.getAttribute("data-lng"));
+                  flyToStation(lat, lng);
+                });
+
+                const vehicleIdCell = document.createElement("td");
+                vehicleIdCell.innerHTML = `
+                  <button class="vehicleId-btn"
+                          data-vehicle-id="${row[0]}">
+                    ${row[0]}
+                  </button>
+                `;
+                existingRow.appendChild(vehicleIdCell);
+
+                const btn2 = vehicleIdCell.querySelector(".vehicleId-btn");
+                btn2.addEventListener("click", (e) => {
+                    playSound();
+                    const vehicleId = e.target.getAttribute("data-vehicle-id");
+                    fetchAndDisplayData(vehicleId);
+                    const parentRow = e.target.closest("tr"); // ボタンの親行を取得
+                    const rowData = Array.from(parentRow.querySelectorAll("td")).map(
+                        (cell) => cell.textContent.trim()
+                    ); // 行のセルデータを取得
+                    displayDetail(rowData); // 詳細を表示
+                });
+
+                for (let i = 0; i < 5; i++) {
+                    const cell = document.createElement("td");
+                    existingRow.appendChild(cell);
+                }
+                tableBody.appendChild(existingRow);
+            }
+            const cells = existingRow.querySelectorAll("td");
+            cells[updateCount * 4 + 2].textContent = row[1];  
+            cells[updateCount * 4 + 3].textContent = row[2];  
+            cells[updateCount * 4 + 4].textContent = row[3];  
+            cells[updateCount * 4 + 5].textContent = row[4];
+            cells[updateCount * 4 + 6].textContent = row[5];  
+        });
+      }
+
+      function displayDetail(rowData) {
+        const detailContainer = document.getElementById("vehicleDetails");
+        detailContainer.innerHTML = ""; // 既存の情報をクリア
+      
+        const detailTable = document.createElement("table");
+        detailTable.border = "1";
+      
+        // ヘッダーを作成
+        const headers = ["アルファベットID", "車両ID", "緯度", "経度", "日時", "目的地", "路線名"];
+        const headerRow = document.createElement("tr");
+        headers.forEach((header) => {
+          const th = document.createElement("th");
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        detailTable.appendChild(headerRow);
+      
+        // データ行を作成
+        const dataRow = document.createElement("tr");
+        rowData.forEach((value) => {
+          const td = document.createElement("td");
+          td.textContent = value;
+          dataRow.appendChild(td);
+        });
+        detailTable.appendChild(dataRow);
+      
+        detailContainer.appendChild(detailTable);
+      }
+
+      /* function hideDetail() {
+        const detailContainer = document.getElementById("vehicleDetails");
+        detailContainer.style.display = "none";
+      } */
+
+      // Googleスプレッドシートの基本APIエンドポイント
+      /* let SHEET_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets/1I9BMCFeELOdDEAuJGEkSF2hD00K8KOLyhso9hI1YfP4/values"; */
+
+      // Vehicle IDに基づいてデータを取得して表示
+      async function fetchAndDisplayData(vehicleId) {
+        // Vehicle ID の最初の2文字に応じてシート名を選択
+        let sheetName = "";
+        // Vehicle ID の最初の2文字が22以下の場合にSHEET_BASE_URLを変更
+        const prefix = vehicleId.substring(0, 2);
+        if (!isNaN(prefix) && Number(prefix) <= 22) {
+          // <=22 は こちら
+          SHEET_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets/1xI4Qb3G4aQ9I6rt_SmiZaMgOq87er3druci_kUEEjdM/values";
+          sheetName = `work${prefix}`;
+        } else if (!isNaN(prefix) && Number(prefix) >= 23) {
+          // >=23 は こちら
+          SHEET_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets/1I9BMCFeELOdDEAuJGEkSF2hD00K8KOLyhso9hI1YfP4/values";
+          sheetName = `work${prefix}`;
+        } else {
+          // 万が一、prefix が数字以外 etc.
+          console.error("Unsupported Vehicle ID prefix. Skipping data fetch.");
+          return;
+        }       
+
+        try {
+          // APIキーを取得
+          const apiData = await getApiData();
+          if (!apiData || !apiData.apiKey) {
+            throw new Error("API key is missing");
+          }
+          const apiKey = apiData.apiKey;
+
+          // スプレッドシートからデータ取得
+          const SHEET_API_URL = `${SHEET_BASE_URL}/${sheetName}!A2:E80000`;
+          const response = await fetch(`${SHEET_API_URL}?key=${apiKey}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const sheetData = await response.json();
+          const rows = sheetData.values;
+
+          // Vehicle IDに一致するデータをフィルタリング
+          const filteredData = rows.filter(row => row[0] === vehicleId);
+
+          console.log("Filtered Data:", filteredData); // デバッグ用ログ
+
+          // テーブル更新
+          updateTable(filteredData, vehicleId);
+        } catch (error) {
+          console.error("Error fetching data from Google Sheets:", error);
+        }
+      }
+
+      // テーブル更新関数
+      function updateTable(data, vehicleId) {
+        const tableBody = document.getElementById("tripsTable").querySelector("tbody");
+        tableBody.innerHTML = ""; // 既存のデータをクリア
+        // tripsTable を表示する
+        const tripsTable = document.getElementById("tripsTable");
+        if (tripsTable) {
+            tripsTable.style.display = "table"; // または "block" に設定
+        }     
+        // データがない場合の処理
+        if (data.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.textContent = "No data found for the selected Vehicle ID.";
+          tr.appendChild(td);
+          tableBody.appendChild(tr);
+          return;
+        }
+           
+        // テーブルデータを更新
+        data.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tableBody.appendChild(tr);
+        });
+        playAudioThreeTimes();
+        tripsTable.style.display = 'table';
+      }
+      
+      const vehicleMarkers = [];
+
+      async function updateMap(
+        markerSet,
+        tableId,
+        isExecution = false,
+        updateCount = 0,
+        keepOnlyLatestMarker = false,
+        routeId = null
+      ) {
+        // 既存のマーカーとポリラインを削除
+        Object.keys(markerSet).forEach(vehicleId => {
+            markerSet[vehicleId].forEach(item => {
+                if (item.marker3D) map3DElement.removeChild(item.marker3D);
+                if (item.marker2D) item.marker2D.setMap(null);
+                if (item.polyline3D) map3DElement.removeChild(item.polyline3D);
+                if (item.polyline2D) item.polyline2D.setMap(null);
+                if (item.polygon3D) map3DElement.removeChild(item.polygon3D);
+            });
+        });
+    
+        markerSet = {};
+        vehicleMarkers.length = 0;
+    
+        const data = await fetchSheetData();
+        console.log("Fetched Data:", data);
+    
+        if (!data) return;
+    
+        for (const [index, row] of data.entries()) {
+            const [vehicleId, lat, lng, rowRouteIdRaw] = row;
+    
+            // VehicleID の先頭2文字を抽出
+            const vehicleRouteId = vehicleId.slice(0, 2); // 左2文字を抽出
+            console.log("Comparing routeId:", routeId, "with vehicleRouteId:", vehicleRouteId);
+    
+            if (routeId !== null && String(vehicleRouteId) !== String(routeId)) {
+                continue; // 不一致の場合スキップ
+            }
+    
+            const position = { lat: parseFloat(lat), lng: parseFloat(lng), altitude: 0 };
+    
+            if (!markerSet[vehicleId]) {
+                markerSet[vehicleId] = [];
+            }
+    
+            if (keepOnlyLatestMarker && markerSet[vehicleId].length) {
+                const oldItem = markerSet[vehicleId].pop();
+                if (oldItem.marker3D) map3DElement.removeChild(oldItem.marker3D);
+                if (oldItem.marker2D) oldItem.marker2D.setMap(null);
+            }
+    
+            const alphabetID = String.fromCharCode(97 + index);
+            const label = alphabetID;
+    
+            const routeColor = routesData.find(route => route.routeId === parseInt(routeId, 10))?.color || "rgba(255, 0, 0, 0.5)";
+            console.log("Route Color:", routeColor);
+    
+            const marker3D = new Marker3DElement({ position });
+            const pinBackground = new PinElement({
+                scale: 1.0,
+                background: routeColor,
+                borderColor: "rgba(0, 0, 0, 0.75)",
+                glyph: label,
+                glyphColor: "black"
+            });
+            marker3D.append(pinBackground);
+            map3DElement.append(marker3D);
+    
+            const polygon3D = document.createElement("gmp-polygon-3d");
+            polygon3D.setAttribute("altitude-mode", "relative-to-ground");
+            polygon3D.setAttribute("fill-color", routeColor);
+            polygon3D.setAttribute("stroke-color", "rgba(0, 0, 0, 0.75)");
+            polygon3D.setAttribute("stroke-width", "1");
+            polygon3D.setAttribute("extruded", "true");
+            polygon3D.setAttribute("extruded-height", "50");
+    
+            customElements.whenDefined("gmp-polygon-3d").then(() => {
+                polygon3D.outerCoordinates = [
+                    { lat: position.lat - 0.0002, lng: position.lng - 0.001, altitude: 50 },
+                    { lat: position.lat - 0.0002, lng: position.lng + 0.001, altitude: 50 },
+                    { lat: position.lat + 0.0002, lng: position.lng + 0.001, altitude: 50 },
+                    { lat: position.lat + 0.0002, lng: position.lng - 0.001, altitude: 50 }
+                ];
+            });
+    
+            map3DElement.append(polygon3D);
+    
+            markerSet[vehicleId].push({
+                position,
+                marker3D,
+                polygon3D
+            });
+    
+            vehicleMarkers.push({ marker3D, polygon3D });
+            updateTableRows(data, tableId, updateCount);
+        }
+    
+        document.getElementById("timestamp").textContent = new Date().toLocaleString();
+      }
+    
+      function clearMarkerSet(markerSet, tableId) {
+        for (let id in markerSet) {
+          const itemList = markerSet[id];
+          itemList.forEach(item => {
+            if (item.marker3D && map3DElement) {
+              map3DElement.removeChild(item.marker3D);
+            }
+            if (item.marker2D) {
+              item.marker2D.setMap(null);
+            }
+            if (item.polyline3D && map3DElement) {
+              map3DElement.removeChild(item.polyline3D);
+            }
+            if (item.polyline2D) {
+              item.polyline2D.setMap(null);
+            }
+          });
+        }
+        markerSet = {};
+        const dataTableBody = document.getElementById(tableId).querySelector('tbody');
+        dataTableBody.innerHTML = '';
+        return markerSet;
+      }
+
+      document.getElementById('refreshButton').addEventListener('click', async () => {
+        playSound();
+        await sendRequest();
+        setTimeout(async () => {
+            await updateMap(markers, "dataTable");
+        }, 1000);
+        playAudioThreeTimes();
+      });
+
+      let stopUpdate = false;
+      document.getElementById('updateEvery10sButton').addEventListener('click', async () => {
+        playSound();
+        stopUpdate = false; 
+        await sendRequest();
+
+        setTimeout(async () => {
+            if (!stopUpdate) {
+                await updateMap(markers, "dataTable", false, 0);
+                playAudioThreeTimes(); 
+            }
+        }, 1000);
+
+        for (let i = 1; i < 12; i++) {
+            setTimeout(async () => {
+                if (!stopUpdate) {
+                    await sendRequest();
+                    await updateMap(markers, "dataTable", false, i);
+                    playAudioThreeTimes();
+                }
+            }, i * 10000);
+        }
+      });
+      document.getElementById('stopUpdateButton').addEventListener('click', () => {
+        stopUpdate = true;
+        playSound();
+      });
+      document.getElementById('clearDataMarkersButton').addEventListener('click', () => {
+        markers = clearMarkerSet(markers, "dataTable");
+        playSound();
+      });
+
+      let stopstart = false;
+      document.getElementById('startButton').addEventListener('click', async () => {
+        playSound();
+        stopstart = false;
+        const vehicleId = document.getElementById('vehicleIdInput').value;
+        if (!vehicleId) {
+            alert("Vehicle IDを入力してください");
+            return;
+        }
+        markers = {};
+        executionMarkers = {};
+
+        await sendRequest(vehicleId);
+        setTimeout(async () => {
+            if (!stopstart) {
+                await updateMap(executionMarkers, "executionTable", true, 0);
+                playAudioThreeTimes();
+            }
+        }, 1000);
+        for (let i = 1; i < 10; i++) {
+            setTimeout(async () => {
+                if (!stopstart) {
+                    await sendRequest(vehicleId);
+                    await updateMap(executionMarkers, "executionTable", true, i);
+                    playAudioThreeTimes();
+                }
+            }, i * 20000);
+        }
+      });
+      document.getElementById('stopstartButton').addEventListener('click', () => {
+        stopstart = true;
+        playSound();
+      });
+      document.getElementById('clearExecutionMarkersButton').addEventListener('click', () => {
+        for (let id in executionMarkers) {
+          executionMarkers[id].forEach(item => {
+            if (item.marker3D) {
+              map3DElement.removeChild(item.marker3D);
+            }
+            if (item.marker2D) {
+              item.marker2D.setMap(null);
+            }
+            if (item.polyline3D) {
+              map3DElement.removeChild(item.polyline3D);
+            }
+            if (item.polyline2D) {
+              item.polyline2D.setMap(null);
+            }
+          });
+        }
+        executionMarkers = {};
+        document.getElementById('executionTable').querySelector('tbody').innerHTML = '';
+        playSound();
+      });
+
+      document.getElementById('flyCameraButton').addEventListener('click', async () => {
+        playSound();
+        const currentCenter = map3DElement.center;
+        const currentTilt = map3DElement.tilt;
+        const currentRange = map3DElement.range;
+        const camera = {
+          center: currentCenter,
+          tilt: currentTilt,
+          range: currentRange
+        };
+        const flyAroundDurationSec = parseFloat(document.getElementById('flyAroundDuration').value) || 5;
+        map3DElement.flyCameraAround({
+          camera,
+          durationMillis: flyAroundDurationSec * 1000,
+          rounds: 1
+        });
+      });
+
+      document.getElementById('disableExplorationButton').addEventListener('click', () => {
+        playSound();
+        if (map3DElement) {
+            map3DElement.setAttribute('default-ui-disabled', '');
+        }
+      });
+      document.getElementById('enableExplorationButton').addEventListener('click', () => {
+        playSound();
+        if (map3DElement) {
+            map3DElement.removeAttribute('default-ui-disabled');
+        }
+      });
+
+      document.getElementById('flyToButton').addEventListener('click', async () => {
+        playSound();
+        const location = document.getElementById('placeInput').value;
+        if (!location) {
+            alert("地名やランドマーク名を入力してください");
+            return;
+        }
+        const { lat, lng } = await geocodeLocation(location);
+        if (lat !== null && lng !== null) {
+          const elevation = await getElevationforPoint({ lat, lng });
+          const altitude = elevation ? elevation + 50 : 100;
+          const flyToDurationSec = parseFloat(document.getElementById('flyToDuration').value) || 5;
+          map3DElement.flyCameraTo({
+              endCamera: {
+                  center: { lat, lng, altitude },
+                  tilt: 65,
+                  range: 500
+              },
+              durationMillis: flyToDurationSec * 1000
+          });
+          playgetSound();
+        } else {
+          alert("位置情報が取得できませんでした。別の場所を試してください。");
+        }
+      });
+
+      async function geocodeLocation(location) {
+        const apiData = await getApiData();
+        if (!apiData) {
+            console.error("apiData is undefined");
+            return { lat: null, lng: null };
+        }
+        const apiKey = apiData.mapsApiKey;
+        if (!apiKey) {
+            console.error("apiKey is undefined");
+            return { lat: null, lng: null };
+        }
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+        try {
+            const response = await fetch(geocodeUrl);
+            const data = await response.json();
+            if (data.status === "OK") {
+                const latLng = data.results[0].geometry.location;
+                return { lat: latLng.lat, lng: latLng.lng };
+            } else {
+                console.error("Geocoding failed:", data.status);
+                return { lat: null, lng: null };
+            }
+        } catch (error) {
+            console.error("Error fetching geocode data:", error);
+            return { lat: null, lng: null };
+        }
+      }
+
+      // Polygonボタン
+      document.getElementById('polygonButton').addEventListener('click', async () => {
+        playSound();
+        let place = window.placeInputLastPlace;
+        if (!place) {
+          const location = document.getElementById('placeInput').value;
+          if (!location) {
+            alert('地名やランドマーク名を入力してください');
+            return;
+          }
+          const geometry = await geocodeLocationToGeometry(location);
+          if (geometry) {
+            let viewport = geometry.viewport;
+            let locationPointsTemp = [
+              { lat: viewport.getNorthEast().lat(), lng: viewport.getNorthEast().lng(), altitude: 500 },
+              { lat: viewport.getSouthWest().lat(), lng: viewport.getNorthEast().lng(), altitude: 500 },
+              { lat: viewport.getSouthWest().lat(), lng: viewport.getSouthWest().lng(), altitude: 500 },
+              { lat: viewport.getNorthEast().lat(), lng: viewport.getSouthWest().lng(), altitude: 500 },
+            ];
+            fillLocationPointsUI(locationPointsTemp);
+          } else {
+            alert('位置情報が取得できませんでした。別の場所を試してください。');
+            return;
+          }
+        }
+
+        const locPoint1Lat = parseFloat(document.getElementById("locPoint1Lat").value) || 0;
+        const locPoint1Lng = parseFloat(document.getElementById("locPoint1Lng").value) || 0;
+        const locPoint2Lat = parseFloat(document.getElementById("locPoint2Lat").value) || 0;
+        const locPoint2Lng = parseFloat(document.getElementById("locPoint2Lng").value) || 0;
+        const locPoint3Lat = parseFloat(document.getElementById("locPoint3Lat").value) || 0;
+        const locPoint3Lng = parseFloat(document.getElementById("locPoint3Lng").value) || 0;
+        const locPoint4Lat = parseFloat(document.getElementById("locPoint4Lat").value) || 0;
+        const locPoint4Lng = parseFloat(document.getElementById("locPoint4Lng").value) || 0;
+        const altitudeOffset = parseFloat(document.getElementById("polygonAltitudeOffset").value) || 500;
+
+        const fillHex = document.getElementById("polygonFillColor").value || "#ff0000";
+        const fillAlpha = parseFloat(document.getElementById("polygonFillAlpha").value) || 1.0;
+        const strokeColor = document.getElementById("polygonStrokeColor").value || "#ff0000";
+        const strokeWidth = parseFloat(document.getElementById("polygonStrokeWidth").value) || 1;
+        const fillColor = hexToRgba(fillHex, fillAlpha);
+
+        const { AltitudeMode, Polygon3DElement } = await google.maps.importLibrary("maps3d");
+        let finalPoints = [
+          { lat: locPoint1Lat, lng: locPoint1Lng, altitude: altitudeOffset },
+          { lat: locPoint2Lat, lng: locPoint2Lng, altitude: altitudeOffset },
+          { lat: locPoint3Lat, lng: locPoint3Lng, altitude: altitudeOffset },
+          { lat: locPoint4Lat, lng: locPoint4Lng, altitude: altitudeOffset },
+        ];
+        let customPolygon = new Polygon3DElement({
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          strokeColor: strokeColor,
+          strokeWidth: strokeWidth,
+          fillColor: fillColor,
+          extruded: true,
+          outerCoordinates: finalPoints,
+        });
+        map3DElement.append(customPolygon);
+      });
+
+      function hexToRgba(hex, alpha) {
+        const trimmed = hex.replace('#', '');
+        if (trimmed.length !== 6) {
+          return 'rgba(0,0,0,1)';
+        }
+        const r = parseInt(trimmed.substring(0,2), 16);
+        const g = parseInt(trimmed.substring(2,4), 16);
+        const b = parseInt(trimmed.substring(4,6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+      async function geocodeLocationToGeometry(location) {
+        const apiData = await getApiData();
+        if (!apiData) {
+            console.error("apiData is undefined");
+            return null;
+        }
+        const apiKey = apiData.mapsApiKey;
+        if (!apiKey) {
+            console.error("apiKey is undefined");
+            return null;
+        }
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+        try {
+            const response = await fetch(geocodeUrl);
+            const data = await response.json();
+            if (data.status === "OK") {
+                return data.results[0].geometry;
+            } else {
+                console.error("Geocoding failed:", data.status);
+                return null;
+            }
+        } catch (error) {
+            console.error("Error fetching geocode data:", error);
+            return null;
+        }
+      }
+
+      // moreOptionsボタン
+      document.getElementById('moreOptionsButton').addEventListener('click', () => {
+        playSound();
+        const moreOptionsDiv = document.getElementById('moreOptions');
+        if (moreOptionsDiv.style.display === 'none') {
+            moreOptionsDiv.style.display = 'block';
+        } else {
+            moreOptionsDiv.style.display = 'none';
+        }
+      });
+
+      // 2D表示/非表示ボタンのイベント
+      document.getElementById('show2dButton').addEventListener('click', () => {
+        document.getElementById('map2d').style.display = 'block';
+      });
+      document.getElementById('hide2dButton').addEventListener('click', () => {
+        document.getElementById('map2d').style.display = 'none';
+      });
+
+      // ログアウトボタン
+      document.getElementById('logoutButton').addEventListener('click', function() {
+        firebase.auth().signOut().then(function() {
+            window.location.href = "login.html";
+        }).catch(function(error) {
+            console.error("ログアウトエラー:", error);
+        });
+      });
+
+      // バス結果テーブル表示切替
+      document.getElementById('busResultsButton').addEventListener('click', function() {
+        var table = document.getElementById('dataTable');
+        if (table.style.display === 'none' || table.style.display === '') {
+            table.style.display = 'table';
+        } else {
+            table.style.display = 'none';
+        }
+      });
+
+      // Vehicle tripsテーブル表示切替
+      document.getElementById('tripsButton').addEventListener('click', function() {
+        var table = document.getElementById('tripsTable');
+        if (table.style.display === 'none' || table.style.display === '') {
+            table.style.display = 'table';
+        } else {
+            table.style.display = 'none';
+        }
+      });
+
+      // 実行結果テーブル表示切替
+      document.getElementById('executionResultsButton').addEventListener('click', function() {
+        var table = document.getElementById('executionTable');
+        if (table.style.display === 'none' || table.style.display === '') {
+            table.style.display = 'table';
+        } else {
+            table.style.display = 'none';
+        }
+      });
+
+      // Labels off/on
+      document.getElementById('labelsOffButton').addEventListener('click', () => {
+        playSound();
+        if (map3DElement) {
+            map3DElement.defaultLabelsDisabled = true;
+        }
+      });
+      document.getElementById('labelsOnButton').addEventListener('click', () => {
+        playSound();
+        if (map3DElement) {
+            map3DElement.defaultLabelsDisabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

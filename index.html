@@ -73,7 +73,7 @@
           background-color: rgba(255, 255, 255, 0.2);
         }      
         .small-heading {
-          background-color: rgba(139, 0, 0, 0.8); 
+          background-color: rgba(64, 64, 64, 0.5); 
           border: 1px solid #ccc;
           color: #fff;
           padding: 8px 12px;
@@ -86,7 +86,7 @@
         }          
         /* 縮小ボタンホバー時のスタイル */
         .small-heading:hover {
-          background-color: rgba(255, 182, 193, 0.8);
+          background-color: rgba(255, 255, 255, 0.2);
         }      
         /* メインコンテナのスタイル */
         #main-container {
@@ -393,7 +393,7 @@
     <header>
       <div class="header-left">
         <img
-          src="https://kickboxerj0322.github.io/Realtime-route-map/01_logo.png"
+          src="https://kickboxerj0322.github.io/digital-route-map/001_logo.png"
           alt="アイコン"
         />
         デジタル路線図 / JR東日本
@@ -2142,41 +2142,41 @@
       }
 
       const routesData = [ 
-          { routeId: 10, routeName: "吾妻線", coords: agatsumaLineCoords, position: agatsumaLineCoords[0], lat: 36.40241, lng: 138.76891, altitude: 100000, heading: 0, color: "rgba(0, 174, 149, 0.75)" }, 
-          { routeId: 11, routeName: "中央線快速", coords: chuoRapidLineCoords, position: chuoRapidLineCoords[0], lat: 35.56177, lng: 139.52489, altitude: 100000, heading: 0, color: "rgba(235, 92, 1, 0.75)" }, 
-          { routeId: 12, routeName: "中央・総武各駅停車", coords: chuoSobuLocalLineCoords, position: chuoSobuLocalLineCoords[0], lat: 35.55815, lng: 139.83710, altitude: 100000, heading: 0, color: "rgba(255, 229, 0, 0.75)" },
-          { routeId: 13, routeName: "八高線", coords: hachikoLineCoords, position: hachikoLineCoords[0], lat: 35.68889, lng: 139.17558, altitude: 170000, heading: 0, color: "rgba(160, 157, 149, 0.75)" },
-          { routeId: 14, routeName: "伊東線", coords: itoLineCoords, position: itoLineCoords[0], lat: 34.96920, lng: 139.08496, altitude: 50000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
-          { routeId: 15, routeName: "五日市線", coords: itsukaichiLineCoords, position: itsukaichiLineCoords[0], lat: 35.67667, lng: 139.28580, altitude: 30000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
-          { routeId: 16, routeName: "常磐線", coords: jobanLineCoords, position: jobanLineCoords[0], lat: 36.0786, lng: 140.20624, altitude: 200000, heading: 0, color: "rgba(0, 113, 197, 0.75)" }, //土浦駅
-          { routeId: 17, routeName: "常磐線各駅停車", coords: jobanLocalLineCoords, position: jobanLocalLineCoords[0], lat: 35.72875, lng: 139.94390, altitude: 70000, heading: 0, color: "rgba(158, 158, 159, 0.75)" },
-          { routeId: 18, routeName: "常磐線快速", coords: jobanRapidLineCoords, position: jobanRapidLineCoords[0], lat: 35.60200, lng: 139.90102, altitude: 100000, heading: 0, color: "rgba(0, 193, 138, 0.75)" },
-          { routeId: 19, routeName: "上越線", coords: joetsuLineCoords, position: joetsuLineCoords[0], lat: 36.66502, lng: 139.22316, altitude: 200000, heading: 315, color: "rgba(0, 172, 209, 0.75)" },
-          { routeId: 20, routeName: "鹿島線", coords: kashimaLineCoords, position: kashimaLineCoords[0], lat: 35.89400, lng: 140.56484, altitude: 50000, heading: 0, color: "rgba(168, 95, 18, 0.75)" },
-          { routeId: 21, routeName: "川越線", coords: kawagoeLineBetweenCoords, position: kawagoeLineBetweenCoords[0], lat: 35.85153, lng: 139.41067, altitude: 40000, heading: 0, color: "rgba(166, 169, 171, 0.75)" },
-          { routeId: 22, routeName: "京浜東北線", coords: keihinTohokuNegishiLineCoords, position: keihinTohokuNegishiLineCoords[0], lat: 35.40018, lng: 139.57774, altitude: 150000, heading: 0, color: "rgba(0, 167, 227, 0.75)" },
-          { routeId: 23, routeName: "京葉線", coords: keiyoLineCoords, position: keiyoLineCoords[0], lat: 35.52992, lng: 139.94799, altitude: 70000, heading: 0, color: "rgba(207, 18, 37, 0.75)" },
-          { routeId: 24, routeName: "久留里線", coords: kururiLineCoords, position: kururiLineCoords[0], lat: 35.2574, lng: 140.00782, altitude: 60000, heading: 0, color: "rgba(0, 195, 167, 0.75)" },
-          { routeId: 25, routeName: "武蔵野線", coords: musashinoLineCoords, position: musashinoLineCoords[0], lat: 35.63653, lng: 139.71831, altitude: 100000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
-          { routeId: 26, routeName: "南武線", coords: nambuLineCoords, position: nambuLineCoords[0], lat: 35.46445, lng: 139.55556, altitude: 90000, heading: 0, color: "rgba(255, 228, 0, 0.75)" },
-          { routeId: 27, routeName: "成田線", coords: naritaLineCoords, position: naritaLineCoords[0], lat: 35.65876, lng: 140.45217, altitude: 160000, heading: 0, color: "rgba(0, 187, 133, 0.75)" },
-          { routeId: 28, routeName: "青梅線", coords: omeLineCoords, position: omeLineCoords[0], lat: 35.65378, lng: 139.25545, altitude: 60000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
-          { routeId: 29, routeName: "相模線", coords: sagamiLineCoords, position: sagamiLineCoords[0], lat: 35.36276, lng: 139.37606, altitude: 90000, heading: 0, color: "rgba(0, 139, 139, 0.75)" },
-          { routeId: 30, routeName: "埼京線", coords: saikyoKawagoeLineCoords, position: saikyoKawagoeLineCoords[0], lat: 35.61331, lng: 139.60572, altitude: 120000, heading: 0, color: "rgba(0, 172, 132, 0.75)" },
-          { routeId: 31, routeName: "湘南新宿ライン", coords: shonanShinjukuLineCoords, position: shonanShinjukuLineCoords[0], lat: 35.43021, lng: 139.57756, altitude: 150000, heading: 0, color: "rgba(222, 5, 21, 0.75)" },
-          { routeId: 32, routeName: "総武本線", coords: sobuMainLineCoords, position: sobuMainLineCoords[0], lat: 35.5827, lng: 140.4401, altitude: 140000, heading: 0, color: "rgba(253, 215, 0, 0.75)" },
-          { routeId: 33, routeName: "総武快速線", coords: sobuRapidLineCoords, position: sobuRapidLineCoords[0], lat: 35.59741, lng: 139.94004, altitude: 70000, heading: 0, color: "rgba(0, 116, 190, 0.75)" },
-          { routeId: 34, routeName: "相鉄直通線", coords: sotetsuDirectLineCoords, position: sotetsuDirectLineCoords[0], lat: 35.48059, lng: 139.65719, altitude: 60000, heading: 0, color: "rgba(0, 195, 167, 0.75)" },
-          { routeId: 35, routeName: "外房線", coords: sotoboLineCoords, position: sotoboLineCoords[0], lat: 35.16039, lng: 140.20840, altitude: 160000, heading: 0, color: "rgba(242, 35, 53, 0.75)" },
-          { routeId: 36, routeName: "高崎線", coords: takasakiLineCoords, position: takasakiLineCoords[0], lat: 35.78863, lng: 139.45695, altitude: 180000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
-          { routeId: 37, routeName: "東金線", coords: toganeLineCoords, position: toganeLineCoords[0], lat: 35.49578, lng: 140.36086, altitude: 50000, heading: 0, color: "rgba(179, 28, 49, 0.75)" },
-          { routeId: 38, routeName: "東海道線", coords: tokaidoLineCoords, position: tokaidoLineCoords[0], lat: 35.26367, lng: 139.43437, altitude: 150000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
-          { routeId: 39, routeName: "鶴見線", coords: tsurumiLineCoords, position: tsurumiLineCoords[0], lat: 35.48484, lng: 139.69911, altitude: 10000, heading: 0, color: "rgba(255, 229, 0, 0.75)" },
-          { routeId: 40, routeName: "内房線", coords: uchiboLineCoords, position: uchiboLineCoords[0], lat: 35.16039, lng: 140.10840, altitude: 170000, heading: 0, color: "rgba(0, 113, 197, 0.75)" },
-          { routeId: 41, routeName: "宇都宮線", coords: utsunomiyaLineCoords, position: utsunomiyaLineCoords[0], lat: 35.92567, lng: 139.91334, altitude: 200000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
-          { routeId: 42, routeName: "山手線", coords: yamanoteLineCoords, position: yamanoteLineCoords[0], lat: 35.6270, lng: 139.73042393956396, altitude: 40000, heading: 0, color: "rgba(133, 192, 35, 0.75)" }, //中間地点
-          { routeId: 43, routeName: "横浜線", coords: yokohamaLineCoords, position: yokohamaLineCoords[0], lat: 35.46646, lng: 139.48671, altitude: 70000, heading: 0, color: "rgba(133, 192, 35, 0.75)" },
-          { routeId: 44, routeName: "横須賀線", coords: yokosukaLineCoords, position: yokosukaLineCoords[0], lat: 35.30720, lng: 139.73372, altitude: 150000, heading: 0, color: "rgba(0, 116, 190, 0.75)" }
+          { routeId: 10, routeName: "吾妻線", coords: agatsumaLineCoords, position: agatsumaLineCoords[0], lat: 36.40241, lng: 138.76891, altitude: 70000, altitudeMini: 130000, heading: 0, color: "rgba(0, 174, 149, 0.75)" }, 
+          { routeId: 11, routeName: "中央線快速", coords: chuoRapidLineCoords, position: chuoRapidLineCoords[0], lat: 35.56177, lng: 139.52489, altitude: 70000, altitudeMini: 130000, heading: 0, color: "rgba(235, 92, 1, 0.75)" }, 
+          { routeId: 12, routeName: "中央・総武各駅停車", coords: chuoSobuLocalLineCoords, position: chuoSobuLocalLineCoords[0], lat: 35.55815, lng: 139.83710, altitude: 70000, altitudeMini: 130000, heading: 0, color: "rgba(255, 229, 0, 0.75)" },
+          { routeId: 13, routeName: "八高線", coords: hachikoLineCoords, position: hachikoLineCoords[0], lat: 35.68889, lng: 139.17558, altitude: 140000, altitudeMini: 210000, heading: 0, color: "rgba(160, 157, 149, 0.75)" },
+          { routeId: 14, routeName: "伊東線", coords: itoLineCoords, position: itoLineCoords[0], lat: 34.96920, lng: 139.08496, altitude: 50000, altitudeMini: 60000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 15, routeName: "五日市線", coords: itsukaichiLineCoords, position: itsukaichiLineCoords[0], lat: 35.67667, lng: 139.28580, altitude: 20000, altitudeMini: 30000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
+          { routeId: 16, routeName: "常磐線", coords: jobanLineCoords, position: jobanLineCoords[0], lat: 36.0786, lng: 140.20624, altitude: 200000, altitudeMini: 230000, heading: 0, color: "rgba(0, 113, 197, 0.75)" }, //土浦駅
+          { routeId: 17, routeName: "常磐線各駅停車", coords: jobanLocalLineCoords, position: jobanLocalLineCoords[0], lat: 35.72875, lng: 139.94390, altitude: 50000, altitudeMini: 90000, heading: 0, color: "rgba(158, 158, 159, 0.75)" },
+          { routeId: 18, routeName: "常磐線快速", coords: jobanRapidLineCoords, position: jobanRapidLineCoords[0], lat: 35.60200, lng: 139.90102, altitude: 90000, altitudeMini: 130000, heading: 0, color: "rgba(0, 193, 138, 0.75)" },
+          { routeId: 19, routeName: "上越線", coords: joetsuLineCoords, position: joetsuLineCoords[0], lat: 36.66502, lng: 139.22316, altitude: 200000, altitudeMini: 220000, heading: 315, color: "rgba(0, 172, 209, 0.75)" },
+          { routeId: 20, routeName: "鹿島線", coords: kashimaLineCoords, position: kashimaLineCoords[0], lat: 35.89400, lng: 140.56484, altitude: 50000, altitudeMini: 50000, heading: 0, color: "rgba(168, 95, 18, 0.75)" },
+          { routeId: 21, routeName: "川越線", coords: kawagoeLineBetweenCoords, position: kawagoeLineBetweenCoords[0], lat: 35.85153, lng: 139.41067, altitude: 20000, altitudeMini: 40000, heading: 0, color: "rgba(166, 169, 171, 0.75)" },
+          { routeId: 22, routeName: "京浜東北線", coords: keihinTohokuNegishiLineCoords, position: keihinTohokuNegishiLineCoords[0], lat: 35.40018, lng: 139.57774, altitude: 150000, altitudeMini: 150000, heading: 0, color: "rgba(0, 167, 227, 0.75)" },
+          { routeId: 23, routeName: "京葉線", coords: keiyoLineCoords, position: keiyoLineCoords[0], lat: 35.52992, lng: 139.94799, altitude: 60000, altitudeMini: 100000, heading: 0, color: "rgba(207, 18, 37, 0.75)" },
+          { routeId: 24, routeName: "久留里線", coords: kururiLineCoords, position: kururiLineCoords[0], lat: 35.2574, lng: 140.00782, altitude: 50000, altitudeMini: 60000, heading: 0, color: "rgba(0, 195, 167, 0.75)" },
+          { routeId: 25, routeName: "武蔵野線", coords: musashinoLineCoords, position: musashinoLineCoords[0], lat: 35.63653, lng: 139.71831, altitude: 80000, altitudeMini: 140000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
+          { routeId: 26, routeName: "南武線", coords: nambuLineCoords, position: nambuLineCoords[0], lat: 35.46445, lng: 139.55556, altitude: 90000, altitudeMini: 100000, heading: 0, color: "rgba(255, 228, 0, 0.75)" },
+          { routeId: 27, routeName: "成田線", coords: naritaLineCoords, position: naritaLineCoords[0], lat: 35.65876, lng: 140.45217, altitude: 140000, altitudeMini: 190000, heading: 0, color: "rgba(0, 187, 133, 0.75)" },
+          { routeId: 28, routeName: "青梅線", coords: omeLineCoords, position: omeLineCoords[0], lat: 35.65378, lng: 139.25545, altitude: 50000, altitudeMini: 90000, heading: 0, color: "rgba(235, 92, 1, 0.75)" },
+          { routeId: 29, routeName: "相模線", coords: sagamiLineCoords, position: sagamiLineCoords[0], lat: 35.36276, lng: 139.37606, altitude: 90000, altitudeMini: 100000, heading: 0, color: "rgba(0, 139, 139, 0.75)" },
+          { routeId: 30, routeName: "埼京線", coords: saikyoKawagoeLineCoords, position: saikyoKawagoeLineCoords[0], lat: 35.61331, lng: 139.60572, altitude: 120000, altitudeMini: 130000, heading: 0, color: "rgba(0, 172, 132, 0.75)" },
+          { routeId: 31, routeName: "湘南新宿ライン", coords: shonanShinjukuLineCoords, position: shonanShinjukuLineCoords[0], lat: 35.43021, lng: 139.57756, altitude: 150000, altitudeMini: 160000, heading: 0, color: "rgba(222, 5, 21, 0.75)" },
+          { routeId: 32, routeName: "総武本線", coords: sobuMainLineCoords, position: sobuMainLineCoords[0], lat: 35.5827, lng: 140.4401, altitude: 120000, altitudeMini: 170000, heading: 0, color: "rgba(253, 215, 0, 0.75)" },
+          { routeId: 33, routeName: "総武快速線", coords: sobuRapidLineCoords, position: sobuRapidLineCoords[0], lat: 35.59741, lng: 139.94004, altitude: 70000, altitudeMini: 100000, heading: 0, color: "rgba(0, 116, 190, 0.75)" },
+          { routeId: 34, routeName: "相鉄直通線", coords: sotetsuDirectLineCoords, position: sotetsuDirectLineCoords[0], lat: 35.48059, lng: 139.65719, altitude: 60000, altitudeMini: 60000, heading: 0, color: "rgba(0, 195, 167, 0.75)" },
+          { routeId: 35, routeName: "外房線", coords: sotoboLineCoords, position: sotoboLineCoords[0], lat: 35.16039, lng: 140.20840, altitude: 160000, altitudeMini: 170000, heading: 0, color: "rgba(242, 35, 53, 0.75)" },
+          { routeId: 36, routeName: "高崎線", coords: takasakiLineCoords, position: takasakiLineCoords[0], lat: 35.78863, lng: 139.45695, altitude: 180000, altitudeMini: 190000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 37, routeName: "東金線", coords: toganeLineCoords, position: toganeLineCoords[0], lat: 35.49578, lng: 140.36086, altitude: 40000, altitudeMini: 50000, heading: 0, color: "rgba(179, 28, 49, 0.75)" },
+          { routeId: 38, routeName: "東海道線", coords: tokaidoLineCoords, position: tokaidoLineCoords[0], lat: 35.26367, lng: 139.43437, altitude: 150000, altitudeMini: 170000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 39, routeName: "鶴見線", coords: tsurumiLineCoords, position: tsurumiLineCoords[0], lat: 35.48484, lng: 139.69911, altitude: 9000, altitudeMini: 90000, heading: 0, color: "rgba(255, 229, 0, 0.75)" },
+          { routeId: 40, routeName: "内房線", coords: uchiboLineCoords, position: uchiboLineCoords[0], lat: 35.16039, lng: 140.10840, altitude: 170000, altitudeMini: 180000, heading: 0, color: "rgba(0, 113, 197, 0.75)" },
+          { routeId: 41, routeName: "宇都宮線", coords: utsunomiyaLineCoords, position: utsunomiyaLineCoords[0], lat: 35.92567, lng: 139.91334, altitude: 200000, altitudeMini: 210000, heading: 0, color: "rgba(255, 152, 69, 0.75)" },
+          { routeId: 42, routeName: "山手線", coords: yamanoteLineCoords, position: yamanoteLineCoords[0], lat: 35.6270, lng: 139.73042393956396, altitude: 30000, altitudeMini: 40000, heading: 0, color: "rgba(133, 192, 35, 0.75)" }, //中間地点
+          { routeId: 43, routeName: "横浜線", coords: yokohamaLineCoords, position: yokohamaLineCoords[0], lat: 35.46646, lng: 139.48671, altitude: 60000, altitudeMini: 100000, heading: 0, color: "rgba(133, 192, 35, 0.75)" },
+          { routeId: 44, routeName: "横須賀線", coords: yokosukaLineCoords, position: yokosukaLineCoords[0], lat: 35.30720, lng: 139.73372, altitude: 150000, altitudeMini: 160000, heading: 0, color: "rgba(0, 116, 190, 0.75)" }
       ];
 
       routesData.forEach(route => {
@@ -2305,7 +2305,7 @@
           const routeBtn = document.createElement("button");
           routeBtn.textContent = route.routeName;
           // 背景色を設定
-          routeBtn.style.backgroundColor = "rgba(0, 100, 0, 0.5)";
+          routeBtn.style.backgroundColor = "rgba(32, 32, 32, 0.7)";
 
           // サブコンテナ (Station/Vehicle/駅リスト)
           const subContainer = document.createElement("div");
@@ -2358,13 +2358,18 @@
               // その路線の駅を表示
               showStationsForRoute(route.coords);
 
-              if (route.position) {
-                  let finalAltitude = route.altitude;
-                  if (window.matchMedia("(max-width: 480px)").matches) {
-                    finalAltitude += 20000;
-                  } else if (window.matchMedia("(max-width: 768px)").matches) {
-                    finalAltitude += 10000;
-                  }
+              if (route.position) { 
+                // 画面幅に応じてfinalAltitudeを設定
+                let finalAltitude;
+                if (window.matchMedia("(max-width: 480px)").matches) {
+                    finalAltitude = route.altitudeMini; // 480px以下の場合はaltitudeMiniを使用
+                    finalAltitude += 0; // 追加調整
+                } else if (window.matchMedia("(max-width: 768px)").matches) {
+                    finalAltitude = route.altitude; // 481px以上768px以下はaltitudeを使用
+                    finalAltitude += 20000; // 追加調整
+                } else {
+                    finalAltitude = route.altitude; // 768px超の場合はaltitudeを使用
+                }
                   map3DElement.flyCameraTo({
                     endCamera: {
                       center: { lat: route.lat, lng: route.lng, altitude: finalAltitude },
@@ -3302,11 +3307,11 @@
 
       // サウンド系
       function playgetSound() {
-        const audio = new Audio('https://kickboxerj0322.github.io/bus-map-3d/071_toy-button-105724.mp3');
+        const audio = new Audio('https://kickboxerj0322.github.io/digital-route-map/071_toy-button-105724.mp3');
         audio.play();
       }
       function playAudioThreeTimes() {
-        const audio = new Audio('https://kickboxerj0322.github.io/bus-map-3d/072_menu-click-89198.mp3');
+        const audio = new Audio('https://kickboxerj0322.github.io/digital-route-map/072_menu-click-89198.mp3');
         let playCount = 0; 
         function playNext() {
             if (playCount < 3) {
@@ -3318,7 +3323,7 @@
         playNext();
       }
       function playSound() {
-        const audio = new Audio('https://kickboxerj0322.github.io/bus-map-3d/073_start-13691.mp3');
+        const audio = new Audio('https://kickboxerj0322.github.io/digital-route-map/073_start-13691.mp3');
         audio.play();
       }
 
